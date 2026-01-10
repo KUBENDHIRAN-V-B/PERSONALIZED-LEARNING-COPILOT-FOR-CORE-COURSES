@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiCheck, FiX, FiRefreshCw, FiClock, FiZap } from 'react-icons/fi';
 
@@ -53,7 +53,7 @@ const QuizPage: React.FC = () => {
   const eceTopics = ['Digital Electronics', 'Signals & Systems', 'Communication Systems', 'Electromagnetic Theory', 'Control Systems', 'Microprocessors', 'VLSI Design', 'Embedded Systems', 'DSP', 'Wireless Communication'];
   const topics = quiz.category === 'cs' ? csTopics : quiz.category === 'ece' ? eceTopics : [];
 
-  const questionBank: { [key: string]: { [key: string]: Question[] } } = {
+  const questionBank: { [key: string]: { [key: string]: Question[] } } = useMemo(() => ({
     'Arrays': {
       'easy': [
         { id: 1, question: 'What is the time complexity of accessing an element in an array?', options: ['O(n)', 'O(1)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Arrays provide constant time O(1) access using index.' },
@@ -110,7 +110,7 @@ const QuizPage: React.FC = () => {
         { id: 3, question: 'What is Fourier transform?', options: ['Signal rotation', 'Time to frequency domain conversion', 'Signal amplification', 'Signal filtering'], correct: 1, explanation: 'Fourier transform converts signals from time to frequency domain.' },
       ],
     },
-  };
+  }), []);
 
   const handleStartQuiz = useCallback(() => {
     if (!quiz.selectedTopic) {
