@@ -130,7 +130,7 @@ const QuizPage: React.FC = () => {
       questions,
       answers: new Array(questions.length).fill(-1),
     }));
-  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount]);
+  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount, questionBank]);
 
   const handleAnswerSelect = useCallback((optionIndex: number) => {
     const newAnswers = [...quiz.answers];
