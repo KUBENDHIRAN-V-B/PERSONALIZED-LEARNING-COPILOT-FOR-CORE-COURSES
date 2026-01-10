@@ -115,7 +115,7 @@ const QuizPage: React.FC = () => {
   const generateQuestions = useCallback((topic: string, difficulty: string): Question[] => {
     const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
     return questions.sort(() => Math.random() - 0.5);
-  }, [questionBank]);
+  }, []);
 
   const handleStartQuiz = useCallback(() => {
     if (!quiz.selectedTopic) {
