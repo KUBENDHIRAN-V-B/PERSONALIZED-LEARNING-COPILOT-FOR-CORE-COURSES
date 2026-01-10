@@ -138,7 +138,7 @@ export const coursesAPI = {
             description: 'Master fundamental data structures and algorithms for efficient problem-solving',
             topics: ['Arrays', 'Linked Lists', 'Stacks', 'Queues', 'Trees', 'Graphs', 'Sorting', 'Searching', 'Dynamic Programming'],
             difficulty: 'Intermediate',
-            category: 'programming',
+            category: 'CS',
             color: 'from-blue-500 to-indigo-600'
           },
           {
@@ -147,7 +147,7 @@ export const coursesAPI = {
             description: 'Learn the basics of programming with hands-on projects',
             topics: ['Variables', 'Control Flow', 'Functions', 'Objects', 'Error Handling'],
             difficulty: 'Beginner',
-            category: 'programming',
+            category: 'CS',
             color: 'from-green-500 to-emerald-600'
           },
           {
@@ -156,7 +156,7 @@ export const coursesAPI = {
             description: 'Explore mathematical foundations of computer science',
             topics: ['Sets', 'Logic', 'Graphs', 'Combinatorics', 'Number Theory'],
             difficulty: 'Advanced',
-            category: 'math',
+            category: 'CS',
             color: 'from-purple-500 to-violet-600'
           },
           {
@@ -165,8 +165,44 @@ export const coursesAPI = {
             description: 'Understand how computers work at the hardware level',
             topics: ['CPU Architecture', 'Memory Hierarchy', 'I/O Systems', 'Pipelining'],
             difficulty: 'Intermediate',
-            category: 'systems',
+            category: 'CS',
             color: 'from-slate-500 to-gray-700'
+          },
+          {
+            id: 'os',
+            name: 'Operating Systems',
+            description: 'Learn about process management, memory management, and system calls',
+            topics: ['Processes', 'Threads', 'Memory Management', 'File Systems', 'Scheduling'],
+            difficulty: 'Intermediate',
+            category: 'CS',
+            color: 'from-orange-500 to-red-600'
+          },
+          {
+            id: 'dbms',
+            name: 'Database Management Systems',
+            description: 'Master SQL, database design, and data management principles',
+            topics: ['SQL', 'Normalization', 'Indexing', 'Transactions', 'NoSQL'],
+            difficulty: 'Intermediate',
+            category: 'CS',
+            color: 'from-cyan-500 to-blue-600'
+          },
+          {
+            id: 'cn',
+            name: 'Computer Networks',
+            description: 'Understand networking protocols, TCP/IP, and network security',
+            topics: ['TCP/IP', 'HTTP', 'Routing', 'Network Security', 'Wireless Networks'],
+            difficulty: 'Intermediate',
+            category: 'CS',
+            color: 'from-teal-500 to-cyan-600'
+          },
+          {
+            id: 'se',
+            name: 'Software Engineering',
+            description: 'Learn software development methodologies and best practices',
+            topics: ['SDLC', 'Agile', 'Testing', 'Requirements', 'Design Patterns'],
+            difficulty: 'Intermediate',
+            category: 'CS',
+            color: 'from-amber-500 to-orange-600'
           }
         ]
       };

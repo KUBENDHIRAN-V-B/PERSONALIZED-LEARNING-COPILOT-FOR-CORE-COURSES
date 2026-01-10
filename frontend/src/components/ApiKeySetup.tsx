@@ -173,9 +173,14 @@ const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onKeysSet }) => {
             )}
           </button>
           
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-800">
+              <strong>Note:</strong> API keys are stored locally in your browser and are device-specific. You'll need to set them up again when using different devices or browsers.
+            </p>
+          </div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-800">
-              <strong>Privacy:</strong> Your API keys are stored locally in your browser and sent directly to the AI providers. They are never stored on our servers.
+              <strong>Privacy:</strong> Your API keys are sent directly to the AI providers and are never stored on our servers.
             </p>
           </div>
         </div>
