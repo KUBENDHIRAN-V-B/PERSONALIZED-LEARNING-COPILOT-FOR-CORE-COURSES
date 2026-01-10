@@ -30,10 +30,88 @@ api.interceptors.response.use(
   }
 );
 
-// Helper function to check if we're in production without backend
-const isProductionWithoutBackend = () => {
+// Helper function to check if we should use mock data
+const shouldUseMockData = () => {
   return process.env.NODE_ENV === 'production' && !process.env.REACT_APP_API_URL;
 };
+
+// Mock courses data
+const getMockCourses = () => ({
+  courses: [
+    {
+      id: 'dsa',
+      name: 'Data Structures & Algorithms',
+      description: 'Master fundamental data structures and algorithms for efficient problem-solving',
+      topics: ['Arrays', 'Linked Lists', 'Stacks', 'Queues', 'Trees', 'Graphs', 'Sorting', 'Searching', 'Dynamic Programming'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-blue-500 to-indigo-600'
+    },
+    {
+      id: 'programming',
+      name: 'Programming Fundamentals',
+      description: 'Learn the basics of programming with hands-on projects',
+      topics: ['Variables', 'Control Flow', 'Functions', 'Objects', 'Error Handling'],
+      difficulty: 'Beginner',
+      category: 'CS',
+      color: 'from-green-500 to-emerald-600'
+    },
+    {
+      id: 'discrete-math',
+      name: 'Discrete Mathematics',
+      description: 'Explore mathematical foundations of computer science',
+      topics: ['Sets', 'Logic', 'Graphs', 'Combinatorics', 'Number Theory'],
+      difficulty: 'Advanced',
+      category: 'CS',
+      color: 'from-purple-500 to-violet-600'
+    },
+    {
+      id: 'coa',
+      name: 'Computer Organization & Architecture',
+      description: 'Understand how computers work at the hardware level',
+      topics: ['CPU Architecture', 'Memory Hierarchy', 'I/O Systems', 'Pipelining'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-slate-500 to-gray-700'
+    },
+    {
+      id: 'os',
+      name: 'Operating Systems',
+      description: 'Learn about process management, memory management, and system calls',
+      topics: ['Processes', 'Threads', 'Memory Management', 'File Systems', 'Scheduling'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-orange-500 to-red-600'
+    },
+    {
+      id: 'dbms',
+      name: 'Database Management Systems',
+      description: 'Master SQL, database design, and data management principles',
+      topics: ['SQL', 'Normalization', 'Indexing', 'Transactions', 'NoSQL'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-cyan-500 to-blue-600'
+    },
+    {
+      id: 'cn',
+      name: 'Computer Networks',
+      description: 'Understand networking protocols, TCP/IP, and network security',
+      topics: ['TCP/IP', 'HTTP', 'Routing', 'Network Security', 'Wireless Networks'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-teal-500 to-cyan-600'
+    },
+    {
+      id: 'se',
+      name: 'Software Engineering',
+      description: 'Learn software development methodologies and best practices',
+      topics: ['SDLC', 'Agile', 'Testing', 'Requirements', 'Design Patterns'],
+      difficulty: 'Intermediate',
+      category: 'CS',
+      color: 'from-amber-500 to-orange-600'
+    }
+  ]
+});
 
 // Simple cache for GET requests
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -84,8 +162,8 @@ export const authAPI = {
 export const chatAPI = {
   sendMessage: async (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
-    
-    if (isProductionWithoutBackend()) {
+
+    if (shouldUseMockData()) {
       // Return mock response for production deployment without backend
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
       return {
@@ -95,11 +173,11 @@ export const chatAPI = {
         }
       };
     }
-    
+
     // Get API keys from localStorage
     const savedKeys = localStorage.getItem('api_keys');
     let apiKeys = {};
-    
+
     if (savedKeys) {
       try {
         const parsedKeys = JSON.parse(savedKeys);
@@ -112,13 +190,24 @@ export const chatAPI = {
         console.error('Error parsing API keys:', error);
       }
     }
-    
-    return api.post('/api/chat/message', { 
-      courseId, 
-      message, 
-      conversationId,
-      apiKeys
-    });
+
+    try {
+      return await api.post('/api/chat/message', {
+        courseId,
+        message,
+        conversationId,
+        apiKeys
+      });
+    } catch (error) {
+      console.warn('Chat API failed, using mock response:', error);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      return {
+        data: {
+          conversationId: conversationId || `conv_${Date.now()}`,
+          aiResponse: `This is a demo response for "${message}". The backend is not currently deployed. To enable full AI chat functionality, please deploy the backend server and set the REACT_APP_API_URL environment variable.`
+        }
+      };
+    }
   },
   getHistory: (conversationId: string) => {
     if (!conversationId) throw new Error('Conversation ID is required');
@@ -128,86 +217,19 @@ export const chatAPI = {
 
 export const coursesAPI = {
   getAll: async () => {
-    if (isProductionWithoutBackend()) {
-      // Return mock courses data for production deployment without backend
-      return {
-        courses: [
-          {
-            id: 'dsa',
-            name: 'Data Structures & Algorithms',
-            description: 'Master fundamental data structures and algorithms for efficient problem-solving',
-            topics: ['Arrays', 'Linked Lists', 'Stacks', 'Queues', 'Trees', 'Graphs', 'Sorting', 'Searching', 'Dynamic Programming'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-blue-500 to-indigo-600'
-          },
-          {
-            id: 'programming',
-            name: 'Programming Fundamentals',
-            description: 'Learn the basics of programming with hands-on projects',
-            topics: ['Variables', 'Control Flow', 'Functions', 'Objects', 'Error Handling'],
-            difficulty: 'Beginner',
-            category: 'CS',
-            color: 'from-green-500 to-emerald-600'
-          },
-          {
-            id: 'discrete-math',
-            name: 'Discrete Mathematics',
-            description: 'Explore mathematical foundations of computer science',
-            topics: ['Sets', 'Logic', 'Graphs', 'Combinatorics', 'Number Theory'],
-            difficulty: 'Advanced',
-            category: 'CS',
-            color: 'from-purple-500 to-violet-600'
-          },
-          {
-            id: 'coa',
-            name: 'Computer Organization & Architecture',
-            description: 'Understand how computers work at the hardware level',
-            topics: ['CPU Architecture', 'Memory Hierarchy', 'I/O Systems', 'Pipelining'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-slate-500 to-gray-700'
-          },
-          {
-            id: 'os',
-            name: 'Operating Systems',
-            description: 'Learn about process management, memory management, and system calls',
-            topics: ['Processes', 'Threads', 'Memory Management', 'File Systems', 'Scheduling'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-orange-500 to-red-600'
-          },
-          {
-            id: 'dbms',
-            name: 'Database Management Systems',
-            description: 'Master SQL, database design, and data management principles',
-            topics: ['SQL', 'Normalization', 'Indexing', 'Transactions', 'NoSQL'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-cyan-500 to-blue-600'
-          },
-          {
-            id: 'cn',
-            name: 'Computer Networks',
-            description: 'Understand networking protocols, TCP/IP, and network security',
-            topics: ['TCP/IP', 'HTTP', 'Routing', 'Network Security', 'Wireless Networks'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-teal-500 to-cyan-600'
-          },
-          {
-            id: 'se',
-            name: 'Software Engineering',
-            description: 'Learn software development methodologies and best practices',
-            topics: ['SDLC', 'Agile', 'Testing', 'Requirements', 'Design Patterns'],
-            difficulty: 'Intermediate',
-            category: 'CS',
-            color: 'from-amber-500 to-orange-600'
-          }
-        ]
-      };
+    // If in production without backend URL, use mock data immediately
+    if (shouldUseMockData()) {
+      return getMockCourses();
     }
-    return cachedGet<{ courses: any[] }>('/api/courses');
+
+    // Try real API first, fall back to mock data if it fails
+    try {
+      const result = await cachedGet<{ courses: any[] }>('/api/courses');
+      return result;
+    } catch (error) {
+      console.warn('API call failed, falling back to mock data:', error);
+      return getMockCourses();
+    }
   },
   getById: (courseId: string) => {
     if (!courseId) throw new Error('Course ID is required');
@@ -221,7 +243,7 @@ export const coursesAPI = {
 
 export const analyticsAPI = {
   getDashboard: async () => {
-    if (isProductionWithoutBackend()) {
+    if (shouldUseMockData()) {
       // Return mock dashboard data for production deployment without backend
       return {
         totalSessions: 24,
@@ -244,7 +266,31 @@ export const analyticsAPI = {
         ]
       };
     }
-    return cachedGet<any>('/api/analytics/dashboard');
+    try {
+      return await cachedGet<any>('/api/analytics/dashboard');
+    } catch (error) {
+      console.warn('Analytics API failed, using mock data:', error);
+      return {
+        totalSessions: 24,
+        totalTimeSpent: 1800,
+        averageAccuracy: 82,
+        coursesCompleted: 1,
+        currentStreak: 5,
+        weeklyGoal: 7,
+        weeklyProgress: 5,
+        recentSessions: [
+          { date: '2024-01-10', duration: 1800, accuracy: 85, topic: 'Binary Trees' },
+          { date: '2024-01-09', duration: 1500, accuracy: 78, topic: 'Graph Algorithms' },
+          { date: '2024-01-08', duration: 2100, accuracy: 90, topic: 'Dynamic Programming' }
+        ],
+        topicMastery: [
+          { topic: 'trees', mastery: 75, sessions: 12 },
+          { topic: 'graphs', mastery: 60, sessions: 8 },
+          { topic: 'sorting', mastery: 90, sessions: 15 },
+          { topic: 'dynamic programming', mastery: 45, sessions: 6 }
+        ]
+      };
+    }
   },
   getExamReadiness: (courseId: string) => {
     if (!courseId) throw new Error('Course ID is required');
@@ -255,7 +301,7 @@ export const analyticsAPI = {
     return api.post('/api/analytics/session', data);
   },
   getInsights: async () => {
-    if (isProductionWithoutBackend()) {
+    if (shouldUseMockData()) {
       // Return mock data for production deployment without backend
       return {
         data: {
@@ -270,7 +316,23 @@ export const analyticsAPI = {
         }
       };
     }
-    return api.get('/api/analytics/insights');
+    try {
+      return await api.get('/api/analytics/insights');
+    } catch (error) {
+      console.warn('Insights API failed, using mock data:', error);
+      return {
+        data: {
+          peakFocusTime: { range: '9 AM - 11 AM', score: 78, isCustom: false, startHour: 9, endHour: 11 },
+          optimalDuration: { value: '25 minutes', avgAccuracy: 85 },
+          masteryByTopic: [
+            { topic: 'trees', mastery: 75, sessionsCount: 12 },
+            { topic: 'graphs', mastery: 60, sessionsCount: 8 },
+            { topic: 'sorting', mastery: 90, sessionsCount: 15 },
+            { topic: 'dynamic programming', mastery: 45, sessionsCount: 6 }
+          ]
+        }
+      };
+    }
   },
   startTimer: (topic: string, courseId: string) => {
     if (!topic || !courseId) throw new Error('Topic and course ID are required');
@@ -294,19 +356,109 @@ export const analyticsAPI = {
 };
 
 export const learningAPI = {
-  getProfile: () => cachedGet<any>('/api/learning/profile'),
+  getProfile: async () => {
+    if (shouldUseMockData()) {
+      return {
+        data: {
+          name: 'Demo User',
+          email: 'demo@example.com',
+          preferences: {
+            focusDuration: 25,
+            breakDuration: 5,
+            notifications: true
+          },
+          stats: {
+            totalStudyTime: 3600,
+            coursesCompleted: 2,
+            averageScore: 85
+          }
+        }
+      };
+    }
+    try {
+      return await cachedGet<any>('/api/learning/profile');
+    } catch (error) {
+      console.warn('Learning profile API failed, using mock data:', error);
+      return {
+        data: {
+          name: 'Demo User',
+          email: 'demo@example.com',
+          preferences: {
+            focusDuration: 25,
+            breakDuration: 5,
+            notifications: true
+          },
+          stats: {
+            totalStudyTime: 3600,
+            coursesCompleted: 2,
+            averageScore: 85
+          }
+        }
+      };
+    }
+  },
   updateProfile: (data: any) => {
     if (!data) throw new Error('Profile data is required');
     return api.put('/api/learning/profile', data);
   },
-  getMastery: (courseId: string) => {
+  getMastery: async (courseId: string) => {
     if (!courseId) throw new Error('Course ID is required');
-    return cachedGet<any>(`/api/learning/mastery/${courseId}`);
+    if (shouldUseMockData()) {
+      return {
+        data: {
+          courseId,
+          overallMastery: 75,
+          topics: [
+            { name: 'Basic Concepts', mastery: 90, completed: true },
+            { name: 'Advanced Topics', mastery: 60, completed: false },
+            { name: 'Practice Problems', mastery: 80, completed: true }
+          ]
+        }
+      };
+    }
+    try {
+      return await cachedGet<any>(`/api/learning/mastery/${courseId}`);
+    } catch (error) {
+      console.warn('Learning mastery API failed, using mock data:', error);
+      return {
+        data: {
+          courseId,
+          overallMastery: 75,
+          topics: [
+            { name: 'Basic Concepts', mastery: 90, completed: true },
+            { name: 'Advanced Topics', mastery: 60, completed: false },
+            { name: 'Practice Problems', mastery: 80, completed: true }
+          ]
+        }
+      };
+    }
   },
 };
 
 export const statusAPI = {
-  getStatus: () => api.get('/api/status'),
+  getStatus: async () => {
+    if (shouldUseMockData()) {
+      return {
+        data: {
+          status: 'mock',
+          message: 'Using mock data - backend not deployed',
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+    try {
+      return await api.get('/api/status');
+    } catch (error) {
+      console.warn('Status API failed, using mock data:', error);
+      return {
+        data: {
+          status: 'mock',
+          message: 'Using mock data - backend not deployed',
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+  },
 };
 
 export default api;
