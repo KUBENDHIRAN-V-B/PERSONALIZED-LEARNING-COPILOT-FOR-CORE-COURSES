@@ -1,10 +1,4 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/build",
-  "installCommand": "cd backend && npm install",
-  "functions": {
-    "backend/src/index.ts": {
-      "maxDuration": 30
-    }
-  }
+  "outputDirectory": "frontend/build"
 }
