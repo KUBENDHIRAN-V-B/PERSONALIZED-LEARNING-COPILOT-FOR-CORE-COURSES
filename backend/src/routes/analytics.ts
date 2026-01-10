@@ -77,28 +77,62 @@ const getUserMastery = (userId: string): Map<string, TopicMastery> => {
 };
 
 // Calculate personalized insights based on real user data
-router.get('/insights', (req: AuthRequest, res: Response) => {
+router.get('/insights', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const sessions = getUserSessions(userId);
     const mastery = getUserMastery(userId);
 
-    if (!sessions || !mastery) {
-      return res.status(500).json({ error: 'Failed to retrieve user data' });
+    // Provide sample data if no real data exists
+    let finalMastery = mastery;
+    if (!mastery || mastery.size === 0) {
+      finalMastery = new Map([
+        ['trees', { topic: 'trees', mastery: 65, sessionsCount: 3, lastStudied: new Date() }],
+        ['graphs', { topic: 'graphs', mastery: 45, sessionsCount: 2, lastStudied: new Date() }],
+        ['dynamic-programming', { topic: 'dynamic-programming', mastery: 30, sessionsCount: 1, lastStudied: new Date() }],
+        ['sorting', { topic: 'sorting', mastery: 80, sessionsCount: 5, lastStudied: new Date() }],
+        ['searching', { topic: 'searching', mastery: 70, sessionsCount: 4, lastStudied: new Date() }],
+      ]);
+      userMastery.set(userId, finalMastery);
     }
 
     // Find weakest topic
     let weakestTopic = { topic: 'trees', mastery: 100 };
-    mastery.forEach((data, topic) => {
+    finalMastery.forEach((data, topic) => {
       if (data.mastery < weakestTopic.mastery) {
         weakestTopic = { topic, mastery: data.mastery };
       }
     });
 
-    // Calculate optimal study time based on session focus scores OR user preference
+    // Provide sample sessions if no real data exists
+    let finalSessions = sessions;
+    if (!sessions || sessions.length === 0) {
+      finalSessions = [
+        {
+          id: '1',
+          userId,
+          courseId: 'dsa',
+          topic: 'trees',
+          startTime: new Date(Date.now() - 86400000),
+          endTime: new Date(Date.now() - 86400000 + 1800000),
+          duration: 30,
+          accuracy: 75,
+          focusScore: 80,
+        },
+        {
+          id: '2',
+          userId,
+          courseId: 'dsa',
+          topic: 'graphs',
+          startTime: new Date(Date.now() - 172800000),
+          endTime: new Date(Date.now() - 172800000 + 2400000),
+          duration: 40,
+          accuracy: 70,
+          focusScore: 75,
+        },
+      ];
+      userSessions.set(userId, finalSessions);
+    }
     const prefs = userPreferences.get(userId);
     let peakHour = 9;
     let peakScore = 78;
@@ -112,7 +146,7 @@ router.get('/insights', (req: AuthRequest, res: Response) => {
     } else {
       // Calculate from session data
       const hourlyFocus: { [hour: number]: { total: number; count: number } } = {};
-      sessions.forEach(session => {
+      finalSessions.forEach(session => {
         const hour = new Date(session.startTime).getHours();
         if (!hourlyFocus[hour]) hourlyFocus[hour] = { total: 0, count: 0 };
         hourlyFocus[hour].total += session.focusScore || 70;
@@ -144,7 +178,7 @@ router.get('/insights', (req: AuthRequest, res: Response) => {
       'long': { accuracy: 0, count: 0 }    // > 60 min
     };
 
-    sessions.forEach(session => {
+    finalSessions.forEach(session => {
       const range = session.duration < 30 ? 'short' : session.duration <= 60 ? 'medium' : 'long';
       durationPerformance[range].accuracy += session.accuracy || 70;
       durationPerformance[range].count += 1;
@@ -165,19 +199,19 @@ router.get('/insights', (req: AuthRequest, res: Response) => {
     // Calculate learning score
     let totalMastery = 0;
     let topicCount = 0;
-    mastery.forEach(data => {
+    finalMastery.forEach(data => {
       totalMastery += data.mastery;
       topicCount += 1;
     });
-    const learningScore = Math.round(totalMastery / topicCount);
+    const learningScore = topicCount > 0 ? Math.round(totalMastery / topicCount) : 0;
 
     // Calculate weekly improvement
     const weekAgo = Date.now() - 7 * 86400000;
-    const thisWeekSessions = sessions.filter(s => new Date(s.startTime).getTime() > weekAgo);
+    const thisWeekSessions = finalSessions.filter(s => new Date(s.startTime).getTime() > weekAgo);
     const weeklyImprovement = thisWeekSessions.length * 2; // Simplified calculation
 
     // Get all mastery data for the chart
-    const masteryList = Array.from(mastery.entries()).map(([topic, data]) => ({
+    const masteryList = Array.from(finalMastery.entries()).map(([topic, data]) => ({
       topic: topic.charAt(0).toUpperCase() + topic.slice(1).replace(/-/g, ' '),
       mastery: data.mastery,
       sessionsCount: data.sessionsCount,
@@ -205,9 +239,9 @@ router.get('/insights', (req: AuthRequest, res: Response) => {
         avgAccuracy: Math.round(bestAvgAccuracy),
       },
       masteryByTopic: masteryList,
-      recentSessions: sessions.slice(-5).reverse(),
-      totalSessions: sessions.length,
-      totalStudyTime: sessions.reduce((acc, s) => acc + s.duration, 0),
+      recentSessions: finalSessions.slice(-5).reverse(),
+      totalSessions: finalSessions.length,
+      totalStudyTime: finalSessions.reduce((acc, s) => acc + s.duration, 0),
     });
   } catch (error) {
     console.error('Insights error:', error);
@@ -216,12 +250,9 @@ router.get('/insights', (req: AuthRequest, res: Response) => {
 });
 
 // Set user's preferred peak focus time
-router.post('/preferences/focus-time', (req: AuthRequest, res: Response) => {
+router.post('/preferences/focus-time', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const { startHour, endHour } = req.body;
 
     if (startHour === undefined || endHour === undefined || startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
@@ -257,12 +288,9 @@ router.post('/preferences/focus-time', (req: AuthRequest, res: Response) => {
 });
 
 // Set mastery goal for a topic
-router.post('/preferences/mastery-goal', (req: AuthRequest, res: Response) => {
+router.post('/preferences/mastery-goal', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const { topic, goal } = req.body;
 
     if (!topic || goal === undefined || goal < 0 || goal > 100) {
@@ -288,12 +316,9 @@ router.post('/preferences/mastery-goal', (req: AuthRequest, res: Response) => {
 });
 
 // Clear custom focus time (revert to auto-calculated)
-router.delete('/preferences/focus-time', (req: AuthRequest, res: Response) => {
+router.delete('/preferences/focus-time', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const prefs = userPreferences.get(userId);
     if (prefs) {
       prefs.peakFocusTime = null;
@@ -307,12 +332,9 @@ router.delete('/preferences/focus-time', (req: AuthRequest, res: Response) => {
 });
 
 // Start a study timer
-router.post('/timer/start', (req: AuthRequest, res: Response) => {
+router.post('/timer/start', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const { topic, courseId } = req.body;
 
     if (!topic || !courseId) {
@@ -341,12 +363,9 @@ router.post('/timer/start', (req: AuthRequest, res: Response) => {
 });
 
 // Stop timer and log session
-router.post('/timer/stop', (req: AuthRequest, res: Response) => {
+router.post('/timer/stop', (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const userId = req.userId;
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const { accuracy, focusScore } = req.body;
 
     if (accuracy === undefined || focusScore === undefined) {
@@ -406,9 +425,9 @@ router.post('/timer/stop', (req: AuthRequest, res: Response) => {
 });
 
 // Get active timer status
-router.get('/timer/status', (req: AuthRequest, res: Response) => {
+router.get('/timer/status', (req: Request, res: Response) => {
   try {
-    const userId = req.userId || 'demo-user';
+    const userId = 'demo-user'; // Use demo user for unauthenticated access
     const timer = activeTimers.get(userId);
 
     if (!timer) {

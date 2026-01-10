@@ -153,8 +153,8 @@ app.get('/api/status', async (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api/chat', chatRoutes(io));
-app.use('/api/learning', learningRoutes);
+app.use('/api/chat', authMiddleware, chatRoutes(io));
+app.use('/api/learning', authMiddleware, learningRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/courses', courseRoutes);
 

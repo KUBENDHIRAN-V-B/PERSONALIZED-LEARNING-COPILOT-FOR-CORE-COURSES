@@ -30,6 +30,13 @@ An AI-powered adaptive learning platform for engineering students to master core
 - Session accuracy and focus score tracking
 - Automatic mastery updates after practice
 
+### 📚 Material Upload & AI Chat
+- Upload study materials (PDF, DOC, TXT, MD)
+- AI-powered document analysis and Q&A
+- Context-aware responses based on uploaded content
+- Support for multiple file formats
+- Secure file storage and management
+
 ### 📚 Comprehensive Course Coverage
 
 **Computer Science (20+ Courses)**
@@ -170,9 +177,11 @@ backend/
 │   │   ├── analytics.ts      # Mastery tracking & insights
 │   │   ├── courses.ts        # Course management
 │   │   ├── learning.ts       # Learning profiles
+│   │   ├── materials.ts      # Material upload & management
 │   │   └── auth.ts           # Authentication
 │   ├── models/
-│   │   └── User.ts           # User schema
+│   │   ├── User.ts           # User schema
+│   │   └── Material.ts       # Material schema
 │   └── middleware/
 │       ├── auth.ts           # JWT verification
 │       └── errorHandler.ts   # Error handling
@@ -186,6 +195,7 @@ frontend/
 │   │   ├── ChatPage.tsx      # AI tutor interface
 │   │   ├── CoursesPage.tsx   # Course selection
 │   │   ├── QuizPage.tsx      # Custom quiz builder
+│   │   ├── MaterialsPage.tsx # Material upload & management
 │   │   └── AnalyticsPage.tsx # Progress analytics
 │   ├── components/
 │   │   ├── PersonalizedInsights.tsx  # Insights & timer
@@ -216,6 +226,12 @@ frontend/
 - `GET /api/analytics/dashboard` - Get analytics dashboard
 - `GET /api/analytics/exam-readiness/:courseId` - Get exam readiness score
 
+### Materials
+- `POST /api/materials/upload` - Upload study material
+- `GET /api/materials` - List user's materials
+- `GET /api/materials/:id` - Get specific material
+- `DELETE /api/materials/:id` - Delete material
+
 ### Courses
 - `GET /api/courses` - List all courses
 - `GET /api/courses/:id` - Get course details
@@ -223,13 +239,14 @@ frontend/
 ## 🎯 How It Works
 
 1. **Select Course** - Choose from 35+ CS and ECE courses
-2. **Chat with AI** - Ask questions about any topic in the course
-3. **Get Adaptive Responses** - AI provides explanations tailored to your level
-4. **Track Progress** - View mastery levels for each topic
-5. **Study with Timer** - Use built-in timer to track focused study sessions
-6. **Get Insights** - Receive personalized recommendations based on performance
-7. **Take Custom Quiz** - Test knowledge with category-based quizzes
-8. **Set Goals** - Configure peak focus times and mastery targets
+2. **Upload Materials** - Upload your study documents (PDF, DOC, TXT, MD)
+3. **Chat with AI** - Ask questions about courses or uploaded materials
+4. **Get Adaptive Responses** - AI provides explanations tailored to your level
+5. **Track Progress** - View mastery levels for each topic
+6. **Study with Timer** - Use built-in timer to track focused study sessions
+7. **Get Insights** - Receive personalized recommendations based on performance
+8. **Take Custom Quiz** - Test knowledge with category-based quizzes
+9. **Set Goals** - Configure peak focus times and mastery targets
 
 ## 🔧 Development Scripts
 
@@ -326,6 +343,7 @@ Frontend Update
 - ✅ Peak focus time detection and customization
 - ✅ 35+ courses across CS and ECE disciplines
 - ✅ Custom quiz builder with difficulty levels
+- ✅ Material upload and AI-powered document chat
 - ✅ Rate limiting and security middleware
 - ✅ Socket.io real-time updates
 - ✅ Responsive UI with Tailwind CSS

@@ -60,22 +60,6 @@ const DashboardPage: React.FC = memo(() => {
           </div>
         </div>
 
-        {/* Explore Courses Action */}
-        <div className="mb-8">
-          <div
-            onClick={navigateTo('/courses')}
-            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-all group"
-          >
-            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-              <FiBook className="text-2xl text-blue-600 group-hover:text-white transition-colors" />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-gray-900">Explore Courses</h3>
-            <p className="text-gray-600">
-              Browse 35+ CS and ECE courses
-            </p>
-          </div>
-        </div>
-
         {/* Personalized Insights */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
