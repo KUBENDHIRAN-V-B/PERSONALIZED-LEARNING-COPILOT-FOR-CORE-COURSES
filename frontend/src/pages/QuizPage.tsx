@@ -115,7 +115,7 @@ const QuizPage: React.FC = () => {
   const generateQuestions = useCallback((topic: string, difficulty: string): Question[] => {
     const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
     return questions.sort(() => Math.random() - 0.5);
-  }, []);
+  }, [questionBank]);
 
   const handleStartQuiz = useCallback(() => {
     if (!quiz.selectedTopic) {
@@ -148,7 +148,7 @@ const QuizPage: React.FC = () => {
       }, 0);
       setQuiz(prev => ({ ...prev, stage: 'results', score, timeSpent: timer }));
     }
-  }, [quiz.currentQuestion, quiz.questions.length, quiz.answers, quiz.questions, timer]);
+  }, [quiz.currentQuestion, quiz.answers, quiz.questions, timer]);
 
   const handleRetakeQuiz = useCallback(() => {
     setQuiz(prev => ({
