@@ -25,9 +25,15 @@ api.interceptors.response.use(
     } catch (err) {
       console.error('Error in response interceptor:', err);
     }
+    // Return a rejected promise with additional context
     return Promise.reject(error);
   }
 );
+
+// Helper function to check if we're in production without backend
+const isProductionWithoutBackend = () => {
+  return process.env.NODE_ENV === 'production' && !process.env.REACT_APP_API_URL;
+};
 
 // Simple cache for GET requests
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -76,8 +82,19 @@ export const authAPI = {
 };
 
 export const chatAPI = {
-  sendMessage: (courseId: string, message: string, conversationId?: string) => {
+  sendMessage: async (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
+    
+    if (isProductionWithoutBackend()) {
+      // Return mock response for production deployment without backend
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      return {
+        data: {
+          conversationId: conversationId || `conv_${Date.now()}`,
+          aiResponse: `This is a demo response for "${message}". The backend is not currently deployed. To enable full AI chat functionality, please deploy the backend server and set the REACT_APP_API_URL environment variable.`
+        }
+      };
+    }
     
     // Get API keys from localStorage
     const savedKeys = localStorage.getItem('api_keys');
@@ -110,7 +127,52 @@ export const chatAPI = {
 };
 
 export const coursesAPI = {
-  getAll: () => cachedGet<{ courses: any[] }>('/api/courses'),
+  getAll: async () => {
+    if (isProductionWithoutBackend()) {
+      // Return mock courses data for production deployment without backend
+      return {
+        courses: [
+          {
+            id: 'dsa',
+            name: 'Data Structures & Algorithms',
+            description: 'Master fundamental data structures and algorithms for efficient problem-solving',
+            topics: ['Arrays', 'Linked Lists', 'Stacks', 'Queues', 'Trees', 'Graphs', 'Sorting', 'Searching', 'Dynamic Programming'],
+            difficulty: 'Intermediate',
+            category: 'programming',
+            color: 'from-blue-500 to-indigo-600'
+          },
+          {
+            id: 'programming',
+            name: 'Programming Fundamentals',
+            description: 'Learn the basics of programming with hands-on projects',
+            topics: ['Variables', 'Control Flow', 'Functions', 'Objects', 'Error Handling'],
+            difficulty: 'Beginner',
+            category: 'programming',
+            color: 'from-green-500 to-emerald-600'
+          },
+          {
+            id: 'discrete-math',
+            name: 'Discrete Mathematics',
+            description: 'Explore mathematical foundations of computer science',
+            topics: ['Sets', 'Logic', 'Graphs', 'Combinatorics', 'Number Theory'],
+            difficulty: 'Advanced',
+            category: 'math',
+            color: 'from-purple-500 to-violet-600'
+          },
+          {
+            id: 'coa',
+            name: 'Computer Organization & Architecture',
+            description: 'Understand how computers work at the hardware level',
+            topics: ['CPU Architecture', 'Memory Hierarchy', 'I/O Systems', 'Pipelining'],
+            difficulty: 'Intermediate',
+            category: 'systems',
+            color: 'from-slate-500 to-gray-700'
+          }
+        ]
+      };
+    }
+    return cachedGet<{ courses: any[] }>('/api/courses');
+  },
   getById: (courseId: string) => {
     if (!courseId) throw new Error('Course ID is required');
     return cachedGet<any>(`/api/courses/${courseId}`);
@@ -122,7 +184,32 @@ export const coursesAPI = {
 };
 
 export const analyticsAPI = {
-  getDashboard: () => cachedGet<any>('/api/analytics/dashboard'),
+  getDashboard: async () => {
+    if (isProductionWithoutBackend()) {
+      // Return mock dashboard data for production deployment without backend
+      return {
+        totalSessions: 24,
+        totalTimeSpent: 1800, // 30 minutes in seconds
+        averageAccuracy: 82,
+        coursesCompleted: 1,
+        currentStreak: 5,
+        weeklyGoal: 7,
+        weeklyProgress: 5,
+        recentSessions: [
+          { date: '2024-01-10', duration: 1800, accuracy: 85, topic: 'Binary Trees' },
+          { date: '2024-01-09', duration: 1500, accuracy: 78, topic: 'Graph Algorithms' },
+          { date: '2024-01-08', duration: 2100, accuracy: 90, topic: 'Dynamic Programming' }
+        ],
+        topicMastery: [
+          { topic: 'trees', mastery: 75, sessions: 12 },
+          { topic: 'graphs', mastery: 60, sessions: 8 },
+          { topic: 'sorting', mastery: 90, sessions: 15 },
+          { topic: 'dynamic programming', mastery: 45, sessions: 6 }
+        ]
+      };
+    }
+    return cachedGet<any>('/api/analytics/dashboard');
+  },
   getExamReadiness: (courseId: string) => {
     if (!courseId) throw new Error('Course ID is required');
     return cachedGet<any>(`/api/analytics/exam-readiness/${courseId}`);
@@ -131,7 +218,24 @@ export const analyticsAPI = {
     if (!data) throw new Error('Session data is required');
     return api.post('/api/analytics/session', data);
   },
-  getInsights: () => api.get('/api/analytics/insights'),
+  getInsights: async () => {
+    if (isProductionWithoutBackend()) {
+      // Return mock data for production deployment without backend
+      return {
+        data: {
+          peakFocusTime: { range: '9 AM - 11 AM', score: 78, isCustom: false, startHour: 9, endHour: 11 },
+          optimalDuration: { value: '25 minutes', avgAccuracy: 85 },
+          masteryByTopic: [
+            { topic: 'trees', mastery: 75, sessionsCount: 12 },
+            { topic: 'graphs', mastery: 60, sessionsCount: 8 },
+            { topic: 'sorting', mastery: 90, sessionsCount: 15 },
+            { topic: 'dynamic programming', mastery: 45, sessionsCount: 6 }
+          ]
+        }
+      };
+    }
+    return api.get('/api/analytics/insights');
+  },
   startTimer: (topic: string, courseId: string) => {
     if (!topic || !courseId) throw new Error('Topic and course ID are required');
     return api.post('/api/analytics/timer/start', { topic, courseId });
