@@ -1,6 +1,7 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiCheck, FiX, FiRefreshCw, FiClock, FiZap } from 'react-icons/fi';
+import { quizAPI } from '../services/api';
 
 interface Question {
   id: number;
@@ -21,6 +22,7 @@ interface QuizState {
   answers: number[];
   score: number;
   timeSpent: number;
+  loading: boolean;
 }
 
 const QuizPage: React.FC = () => {
@@ -36,6 +38,7 @@ const QuizPage: React.FC = () => {
     answers: [],
     score: 0,
     timeSpent: 0,
+    loading: false,
   });
   const [timer, setTimer] = useState(0);
 
@@ -53,84 +56,32 @@ const QuizPage: React.FC = () => {
   const eceTopics = ['Digital Electronics', 'Signals & Systems', 'Communication Systems', 'Electromagnetic Theory', 'Control Systems', 'Microprocessors', 'VLSI Design', 'Embedded Systems', 'DSP', 'Wireless Communication'];
   const topics = quiz.category === 'cs' ? csTopics : quiz.category === 'ece' ? eceTopics : [];
 
-  const questionBank: { [key: string]: { [key: string]: Question[] } } = useMemo(() => ({
-    'Arrays': {
-      'easy': [
-        { id: 1, question: 'What is the time complexity of accessing an element in an array?', options: ['O(n)', 'O(1)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Arrays provide constant time O(1) access using index.' },
-        { id: 2, question: 'Which operation is most efficient in an array?', options: ['Insertion at beginning', 'Deletion from middle', 'Access by index', 'Searching'], correct: 2, explanation: 'Accessing by index is O(1), the most efficient operation.' },
-      ],
-      'medium': [
-        { id: 3, question: 'Time complexity of inserting at the beginning of an array?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n log n)'], correct: 1, explanation: 'Requires shifting all elements, resulting in O(n).' },
-      ],
-      'hard': [
-        { id: 4, question: 'Space complexity of 2D array m×n?', options: ['O(1)', 'O(m+n)', 'O(m*n)', 'O(log(m*n))'], correct: 2, explanation: 'A 2D array stores m*n elements, so space is O(m*n).' },
-      ],
-    },
-    'Linked Lists': {
-      'easy': [
-        { id: 1, question: 'What is a linked list node?', options: ['Array element', 'Data + pointer', 'Only data', 'Only pointer'], correct: 1, explanation: 'A node contains data and a pointer to the next node.' },
-      ],
-      'medium': [
-        { id: 2, question: 'Time complexity of accessing nth element?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Must traverse from head, so O(n) time.' },
-      ],
-      'hard': [
-        { id: 3, question: 'Time to detect cycle in linked list?', options: ['O(1)', 'O(n)', 'O(n²)', 'O(log n)'], correct: 1, explanation: 'Floyd cycle detection uses O(n) time and O(1) space.' },
-      ],
-    },
-    'Trees': {
-      'easy': [
-        { id: 1, question: 'What is the root of a tree?', options: ['Deepest node', 'Topmost node', 'Leftmost node', 'Any node'], correct: 1, explanation: 'Root is the topmost node with no parent.' },
-      ],
-      'medium': [
-        { id: 2, question: 'Time complexity of search in balanced BST?', options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 1, explanation: 'Balanced BST provides O(log n) search time.' },
-      ],
-      'hard': [
-        { id: 3, question: 'What is tree balancing?', options: ['Sorting nodes', 'Maintaining height difference', 'Removing nodes', 'Adding nodes'], correct: 1, explanation: 'Balancing maintains height difference ≤ 1 for efficiency.' },
-      ],
-    },
-    'Digital Electronics': {
-      'easy': [
-        { id: 1, question: 'What is a logic gate?', options: ['Physical gate', 'Electronic circuit', 'Software program', 'Network device'], correct: 1, explanation: 'Logic gates are electronic circuits that perform Boolean operations.' },
-      ],
-      'medium': [
-        { id: 2, question: 'What is Boolean algebra?', options: ['Algebra of numbers', 'Algebra of logic', 'Algebra of sets', 'Algebra of functions'], correct: 1, explanation: 'Boolean algebra deals with binary variables and logic operations.' },
-      ],
-      'hard': [
-        { id: 3, question: 'What is Karnaugh map?', options: ['Geographic map', 'Logic simplification tool', 'Circuit diagram', 'Truth table'], correct: 1, explanation: 'Karnaugh map simplifies Boolean expressions graphically.' },
-      ],
-    },
-    'Signals & Systems': {
-      'easy': [
-        { id: 1, question: 'What is a signal?', options: ['Noise', 'Information-bearing function', 'Frequency', 'Amplitude'], correct: 1, explanation: 'A signal is a function that carries information.' },
-      ],
-      'medium': [
-        { id: 2, question: 'What is a system?', options: ['Computer', 'Process that transforms signals', 'Device', 'Network'], correct: 1, explanation: 'A system processes input signals to produce output signals.' },
-      ],
-      'hard': [
-        { id: 3, question: 'What is Fourier transform?', options: ['Signal rotation', 'Time to frequency domain conversion', 'Signal amplification', 'Signal filtering'], correct: 1, explanation: 'Fourier transform converts signals from time to frequency domain.' },
-      ],
-    },
-  }), []);
-
-  const handleStartQuiz = useCallback(() => {
+  const handleStartQuiz = useCallback(async () => {
     if (!quiz.selectedTopic) {
       alert('Please select a topic');
       return;
     }
-    const generateQuestions = (topic: string, difficulty: string): Question[] => {
-      const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
-      return questions.sort(() => Math.random() - 0.5);
-    };
-    let questions = generateQuestions(quiz.selectedTopic, quiz.difficulty);
-    questions = questions.slice(0, quiz.questionCount);
-    setTimer(0);
-    setQuiz(prev => ({
-      ...prev,
-      stage: 'quiz',
-      questions,
-      answers: new Array(questions.length).fill(-1),
-    }));
-  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount, questionBank]);
+
+    setQuiz(prev => ({ ...prev, loading: true }));
+
+    try {
+      const response = await quizAPI.getQuestions(quiz.selectedTopic, quiz.difficulty, quiz.questionCount);
+      const questions = response.data.questions;
+
+      setTimer(0);
+      setQuiz(prev => ({
+        ...prev,
+        stage: 'quiz',
+        questions,
+        answers: new Array(questions.length).fill(-1),
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Failed to load quiz questions:', error);
+      alert('Failed to load quiz questions. Please try again.');
+      setQuiz(prev => ({ ...prev, loading: false }));
+    }
+  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount]);
 
   const handleAnswerSelect = useCallback((optionIndex: number) => {
     const newAnswers = [...quiz.answers];
@@ -138,16 +89,48 @@ const QuizPage: React.FC = () => {
     setQuiz(prev => ({ ...prev, answers: newAnswers }));
   }, [quiz.answers, quiz.currentQuestion]);
 
-  const handleNextQuestion = useCallback(() => {
+  const handleNextQuestion = useCallback(async () => {
     if (quiz.currentQuestion < quiz.questions.length - 1) {
       setQuiz(prev => ({ ...prev, currentQuestion: prev.currentQuestion + 1 }));
     } else {
-      const score = quiz.answers.reduce((acc, answer, idx) => {
-        return acc + (answer === quiz.questions[idx].correct ? 1 : 0);
-      }, 0);
-      setQuiz(prev => ({ ...prev, stage: 'results', score, timeSpent: timer }));
+      // Submit quiz to API
+      setQuiz(prev => ({ ...prev, loading: true }));
+
+      try {
+        const quizData = {
+          topic: quiz.selectedTopic,
+          difficulty: quiz.difficulty,
+          answers: quiz.answers,
+          timeSpent: timer,
+          questions: quiz.questions
+        };
+
+        const response = await quizAPI.submitQuiz(quizData);
+        const result = response.data;
+
+        setQuiz(prev => ({
+          ...prev,
+          stage: 'results',
+          score: result.score,
+          timeSpent: result.timeSpent,
+          loading: false
+        }));
+      } catch (error) {
+        console.error('Failed to submit quiz:', error);
+        // Fallback to local calculation
+        const score = quiz.answers.reduce((acc, answer, idx) => {
+          return acc + (answer === quiz.questions[idx].correct ? 1 : 0);
+        }, 0);
+        setQuiz(prev => ({
+          ...prev,
+          stage: 'results',
+          score: Math.round((score / quiz.questions.length) * 100),
+          timeSpent: timer,
+          loading: false
+        }));
+      }
     }
-  }, [quiz.currentQuestion, quiz.answers, quiz.questions, timer]);
+  }, [quiz.currentQuestion, quiz.questions, quiz.answers, quiz.selectedTopic, quiz.difficulty, timer]);
 
   const handleRetakeQuiz = useCallback(() => {
     setQuiz(prev => ({
@@ -276,11 +259,13 @@ const QuizPage: React.FC = () => {
 
                 <button
                   onClick={handleStartQuiz}
-                  className={`w-full text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 ${
+                  disabled={quiz.loading}
+                  className={`w-full text-white py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     buttonColor === 'blue' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'
                   }`}
                 >
-                  <FiZap /> Start Quiz
+                  {quiz.loading ? <FiRefreshCw className="animate-spin" /> : <FiZap />}
+                  {quiz.loading ? 'Loading Questions...' : 'Start Quiz'}
                 </button>
               </>
             )}
@@ -328,10 +313,17 @@ const QuizPage: React.FC = () => {
 
             <button
               onClick={handleNextQuestion}
-              disabled={quiz.answers[quiz.currentQuestion] === -1}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={quiz.answers[quiz.currentQuestion] === -1 || quiz.loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {quiz.currentQuestion === quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+              {quiz.loading ? (
+                <>
+                  <FiRefreshCw className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                quiz.currentQuestion === quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'
+              )}
             </button>
           </div>
         )}

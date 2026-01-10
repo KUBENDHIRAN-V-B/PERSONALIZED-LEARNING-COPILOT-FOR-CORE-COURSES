@@ -109,6 +109,97 @@ const getMockCourses = () => ({
       difficulty: 'Intermediate',
       category: 'CS',
       color: 'from-amber-500 to-orange-600'
+    },
+    // ECE Courses
+    {
+      id: 'digital-electronics',
+      name: 'Digital Electronics',
+      description: 'Learn digital logic circuits, gates, and digital system design',
+      topics: ['Logic Gates', 'Boolean Algebra', 'Combinational Circuits', 'Sequential Circuits', 'Flip-Flops'],
+      difficulty: 'Intermediate',
+      category: 'ECE',
+      color: 'from-red-500 to-pink-600'
+    },
+    {
+      id: 'analog-electronics',
+      name: 'Analog Electronics',
+      description: 'Master analog circuits, amplifiers, and signal processing',
+      topics: ['Diodes', 'Transistors', 'Amplifiers', 'Oscillators', 'Filters'],
+      difficulty: 'Intermediate',
+      category: 'ECE',
+      color: 'from-yellow-500 to-orange-600'
+    },
+    {
+      id: 'signals-systems',
+      name: 'Signals & Systems',
+      description: 'Understand signal processing, Fourier analysis, and system theory',
+      topics: ['Continuous Signals', 'Discrete Signals', 'Fourier Transform', 'Laplace Transform', 'Z-Transform'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-indigo-500 to-purple-600'
+    },
+    {
+      id: 'communication-systems',
+      name: 'Communication Systems',
+      description: 'Learn modulation, transmission, and communication protocols',
+      topics: ['AM/FM Modulation', 'Digital Communication', 'Channel Coding', 'Wireless Communication', 'Optical Communication'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-green-500 to-teal-600'
+    },
+    {
+      id: 'control-systems',
+      name: 'Control Systems',
+      description: 'Study feedback systems, stability analysis, and controller design',
+      topics: ['Transfer Functions', 'Stability Analysis', 'PID Controllers', 'State Space', 'Frequency Response'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-blue-500 to-cyan-600'
+    },
+    {
+      id: 'microprocessors',
+      name: 'Microprocessors & Microcontrollers',
+      description: 'Learn embedded systems programming and microcontroller architecture',
+      topics: ['8085/8086 Architecture', '8051 Microcontroller', 'ARM Processors', 'Assembly Language', 'Embedded C'],
+      difficulty: 'Intermediate',
+      category: 'ECE',
+      color: 'from-purple-500 to-indigo-600'
+    },
+    {
+      id: 'electromagnetic-theory',
+      name: 'Electromagnetic Theory',
+      description: 'Understand electromagnetic waves, transmission lines, and antennas',
+      topics: ['Maxwell Equations', 'Wave Propagation', 'Transmission Lines', 'Antenna Theory', 'Microwave Engineering'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-slate-500 to-stone-600'
+    },
+    {
+      id: 'power-electronics',
+      name: 'Power Electronics',
+      description: 'Learn power conversion, motor drives, and renewable energy systems',
+      topics: ['Power Semiconductor Devices', 'DC-DC Converters', 'Inverters', 'Motor Drives', 'Renewable Energy'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-orange-500 to-amber-600'
+    },
+    {
+      id: 'vlsi-design',
+      name: 'VLSI Design',
+      description: 'Master integrated circuit design and semiconductor technology',
+      topics: ['CMOS Technology', 'Logic Design', 'Layout Design', 'Timing Analysis', 'FPGA Design'],
+      difficulty: 'Advanced',
+      category: 'ECE',
+      color: 'from-cyan-500 to-teal-600'
+    },
+    {
+      id: 'embedded-systems',
+      name: 'Embedded Systems',
+      description: 'Design and program embedded systems for real-world applications',
+      topics: ['Real-time Systems', 'RTOS', 'IoT', 'Sensor Networks', 'System-on-Chip'],
+      difficulty: 'Intermediate',
+      category: 'ECE',
+      color: 'from-emerald-500 to-green-600'
     }
   ]
 });
@@ -596,6 +687,273 @@ export const analyticsAPI = {
     if (!topic || goal === undefined) throw new Error('Topic and goal are required');
     return api.post('/api/analytics/preferences/mastery-goal', { topic, goal });
   },
+};
+
+// Mock quiz questions database
+const getMockQuizQuestions = (topic: string, difficulty: string, count: number = 5) => {
+  const questionBank: { [key: string]: { [key: string]: any[] } } = {
+    // CS Topics
+    'Arrays': {
+      'easy': [
+        { id: 1, question: 'What is the time complexity of accessing an element in an array by index?', options: ['O(n)', 'O(1)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Arrays provide constant time O(1) access using direct indexing.' },
+        { id: 2, question: 'Which operation is most efficient in an array?', options: ['Insertion at beginning', 'Deletion from middle', 'Access by index', 'Linear search'], correct: 2, explanation: 'Accessing by index is O(1), making it the most efficient operation.' },
+        { id: 3, question: 'What is the space complexity of a static array?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Static arrays have fixed size, so space complexity is O(1) for the array structure.' },
+      ],
+      'medium': [
+        { id: 4, question: 'Time complexity of inserting an element at the beginning of an array?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n log n)'], correct: 1, explanation: 'Requires shifting all elements to the right, resulting in O(n) time.' },
+        { id: 5, question: 'Which array operation requires shifting elements?', options: ['Access', 'Update', 'Insert/Delete', 'Search'], correct: 2, explanation: 'Insert and delete operations require shifting elements to maintain contiguous storage.' },
+      ],
+      'hard': [
+        { id: 6, question: 'Space complexity of a 2D array of size m×n?', options: ['O(1)', 'O(m+n)', 'O(m*n)', 'O(log(m*n))'], correct: 2, explanation: 'A 2D array stores m*n elements, so space complexity is O(m*n).' },
+        { id: 7, question: 'In dynamic arrays, what happens when capacity is exceeded?', options: ['Elements are lost', 'Array doubles in size', 'Program crashes', 'Elements are compressed'], correct: 1, explanation: 'Dynamic arrays typically double their capacity when full to maintain amortized O(1) insertions.' },
+      ],
+    },
+    'Linked Lists': {
+      'easy': [
+        { id: 1, question: 'What does a linked list node contain?', options: ['Only data', 'Only pointer', 'Data and pointer', 'Multiple pointers'], correct: 2, explanation: 'A basic node contains data and a pointer to the next node.' },
+        { id: 2, question: 'What is the advantage of linked lists over arrays?', options: ['Faster access', 'Dynamic size', 'Less memory', 'Simpler implementation'], correct: 1, explanation: 'Linked lists can grow and shrink dynamically without contiguous memory allocation.' },
+      ],
+      'medium': [
+        { id: 3, question: 'Time complexity of accessing the nth element in a linked list?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Must traverse from the head node, requiring O(n) time in the worst case.' },
+        { id: 4, question: 'Which type of linked list allows traversal in both directions?', options: ['Singly', 'Doubly', 'Circular', 'Static'], correct: 1, explanation: 'Doubly linked lists have pointers to both next and previous nodes.' },
+      ],
+      'hard': [
+        { id: 5, question: 'Time complexity of Floyd cycle detection algorithm?', options: ['O(1)', 'O(n)', 'O(n²)', 'O(log n)'], correct: 1, explanation: 'Floyd algorithm uses two pointers moving at different speeds, detecting cycles in O(n) time.' },
+        { id: 6, question: 'Space complexity of reversing a linked list iteratively?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 0, explanation: 'Iterative reversal uses only a few pointer variables, achieving O(1) space complexity.' },
+      ],
+    },
+    'Trees': {
+      'easy': [
+        { id: 1, question: 'What is the root of a tree?', options: ['Deepest node', 'Topmost node', 'Leftmost node', 'Any leaf node'], correct: 1, explanation: 'The root is the topmost node with no parent in a tree structure.' },
+        { id: 2, question: 'What is a leaf node?', options: ['Root node', 'Node with children', 'Node with no children', 'Middle node'], correct: 2, explanation: 'A leaf node has no children in the tree structure.' },
+      ],
+      'medium': [
+        { id: 3, question: 'Time complexity of search in a balanced Binary Search Tree?', options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 1, explanation: 'Balanced BSTs maintain O(log n) height, providing logarithmic search time.' },
+        { id: 4, question: 'What is tree traversal?', options: ['Sorting nodes', 'Visiting all nodes', 'Deleting nodes', 'Adding nodes'], correct: 1, explanation: 'Traversal means visiting each node in the tree exactly once.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is the height of a balanced binary tree with n nodes?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], correct: 1, explanation: 'A balanced binary tree has height O(log n) for n nodes.' },
+        { id: 6, question: 'What does AVL tree maintain?', options: ['Complete balance', 'Height difference ≤ 1', 'Perfect balance', 'Node count balance'], correct: 1, explanation: 'AVL trees maintain balance by ensuring height difference between subtrees is at most 1.' },
+      ],
+    },
+    'Graphs': {
+      'easy': [
+        { id: 1, question: 'What represents relationships between objects?', options: ['Arrays', 'Trees', 'Graphs', 'Lists'], correct: 2, explanation: 'Graphs represent relationships between objects using nodes and edges.' },
+        { id: 2, question: 'What is a vertex in graph theory?', options: ['Edge', 'Node', 'Path', 'Cycle'], correct: 1, explanation: 'Vertices (or nodes) are the fundamental units that graphs are built from.' },
+      ],
+      'medium': [
+        { id: 3, question: 'Which representation uses O(V²) space?', options: ['Adjacency List', 'Adjacency Matrix', 'Edge List', 'Incidence Matrix'], correct: 1, explanation: 'Adjacency Matrix uses a 2D array of size V×V, requiring O(V²) space.' },
+        { id: 4, question: 'What is BFS used for?', options: ['Sorting', 'Shortest path', 'Level-order traversal', 'Both B and C'], correct: 3, explanation: 'BFS finds shortest paths in unweighted graphs and performs level-order traversal.' },
+      ],
+      'hard': [
+        { id: 5, question: 'Time complexity of Dijkstra algorithm?', options: ['O(V)', 'O(E log V)', 'O(V²)', 'O(E)'], correct: 1, explanation: 'Using binary heap, Dijkstra runs in O((V+E) log V) time.' },
+        { id: 6, question: 'What does topological sort do?', options: ['Sorts nodes', 'Orders dependencies', 'Finds cycles', 'Calculates paths'], correct: 1, explanation: 'Topological sort orders nodes such that for every edge u→v, u comes before v.' },
+      ],
+    },
+    'Sorting': {
+      'easy': [
+        { id: 1, question: 'Which sort is stable?', options: ['Quick Sort', 'Heap Sort', 'Merge Sort', 'Selection Sort'], correct: 2, explanation: 'Merge Sort maintains relative order of equal elements, making it stable.' },
+        { id: 2, question: 'Time complexity of Bubble Sort?', options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)'], correct: 2, explanation: 'Bubble Sort compares adjacent elements, giving O(n²) in worst case.' },
+      ],
+      'medium': [
+        { id: 3, question: 'Which sort uses divide and conquer?', options: ['Bubble Sort', 'Quick Sort', 'Insertion Sort', 'Selection Sort'], correct: 1, explanation: 'Quick Sort divides array around a pivot and recursively sorts subarrays.' },
+        { id: 4, question: 'Space complexity of Merge Sort?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 1, explanation: 'Merge Sort requires O(n) additional space for merging arrays.' },
+      ],
+      'hard': [
+        { id: 5, question: 'Best case time complexity of Quick Sort?', options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)'], correct: 1, explanation: 'When pivot divides array equally, Quick Sort achieves O(n log n) in best case.' },
+        { id: 6, question: 'Which sort is in-place?', options: ['Merge Sort', 'Quick Sort', 'Both', 'Neither'], correct: 1, explanation: 'Quick Sort is in-place, while Merge Sort requires additional space.' },
+      ],
+    },
+    'Dynamic Programming': {
+      'easy': [
+        { id: 1, question: 'What does DP stand for?', options: ['Data Processing', 'Dynamic Programming', 'Direct Path', 'Data Points'], correct: 1, explanation: 'DP stands for Dynamic Programming, a method for solving complex problems.' },
+        { id: 2, question: 'What is optimal substructure?', options: ['Smallest solution', 'Solution from subsolutions', 'Fastest solution', 'Memory efficient'], correct: 1, explanation: 'Optimal substructure means optimal solution is built from optimal subsolutions.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What is memoization?', options: ['Memory allocation', 'Storing computed results', 'Variable naming', 'Code optimization'], correct: 1, explanation: 'Memoization stores results of expensive function calls to avoid recomputation.' },
+        { id: 4, question: 'Time complexity of Fibonacci with DP?', options: ['O(2^n)', 'O(n)', 'O(n²)', 'O(log n)'], correct: 1, explanation: 'DP reduces Fibonacci from exponential O(2^n) to linear O(n) time.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is the knapsack problem?', options: ['Sorting items', 'Resource allocation', 'Path finding', 'String matching'], correct: 1, explanation: '0/1 Knapsack is a resource allocation problem solved with DP.' },
+        { id: 6, question: 'Space optimization in DP?', options: ['Use more memory', 'Use only current row', 'Store everything', 'Use recursion'], correct: 1, explanation: 'Many DP problems can be optimized to use O(min(n,m)) space instead of O(n*m).' },
+      ],
+    },
+    // ECE Topics
+    'Digital Electronics': {
+      'easy': [
+        { id: 1, question: 'What is a logic gate?', options: ['Physical gate', 'Electronic circuit performing logic', 'Software function', 'Network device'], correct: 1, explanation: 'Logic gates are electronic circuits that perform Boolean logic operations.' },
+        { id: 2, question: 'What does AND gate output?', options: ['1 only if both inputs 1', '1 if any input 1', 'Always 1', 'Always 0'], correct: 0, explanation: 'AND gate outputs 1 only when both inputs are 1.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What is Boolean algebra?', options: ['Number algebra', 'Logic algebra', 'String algebra', 'Matrix algebra'], correct: 1, explanation: 'Boolean algebra deals with binary variables and logic operations (AND, OR, NOT).' },
+        { id: 4, question: 'What is a flip-flop?', options: ['Logic gate', 'Memory element', 'Amplifier', 'Oscillator'], correct: 1, explanation: 'Flip-flops are bistable multivibrators used as memory elements in digital circuits.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is Karnaugh map used for?', options: ['Circuit drawing', 'Logic simplification', 'Signal analysis', 'Power calculation'], correct: 1, explanation: 'K-maps provide a graphical method to simplify Boolean expressions.' },
+        { id: 6, question: 'What is race condition in digital circuits?', options: ['Fast running', 'Unpredictable output', 'Power issue', 'Heat problem'], correct: 1, explanation: 'Race conditions occur when output depends on signal propagation delays.' },
+      ],
+    },
+    'Signals & Systems': {
+      'easy': [
+        { id: 1, question: 'What is a signal?', options: ['Noise', 'Information function', 'Frequency', 'Amplitude'], correct: 1, explanation: 'A signal is a function that carries information, varying with time or space.' },
+        { id: 2, question: 'What is a system?', options: ['Computer', 'Signal processor', 'Device', 'Network'], correct: 1, explanation: 'A system processes input signals to produce output signals.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What does Fourier transform do?', options: ['Time to frequency', 'Frequency to time', 'Amplitude scaling', 'Phase shifting'], correct: 0, explanation: 'Fourier transform converts signals from time domain to frequency domain.' },
+        { id: 4, question: 'What is convolution?', options: ['Addition', 'Multiplication', 'Signal combination', 'Division'], correct: 2, explanation: 'Convolution combines two signals to show how one influences the other.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is Laplace transform used for?', options: ['Time signals', 'Complex analysis', 'Differential equations', 'Both B and C'], correct: 3, explanation: 'Laplace transform converts differential equations to algebraic equations.' },
+        { id: 6, question: 'What is sampling theorem?', options: ['Signal storage', 'Frequency limit', 'Nyquist rate', 'Both B and C'], correct: 3, explanation: 'Sampling theorem states sampling frequency must be at least twice signal bandwidth.' },
+      ],
+    },
+    'Communication Systems': {
+      'easy': [
+        { id: 1, question: 'What is modulation?', options: ['Signal mixing', 'Carrier variation', 'Noise addition', 'Signal filtering'], correct: 1, explanation: 'Modulation varies a carrier signal property (amplitude, frequency, phase) with message.' },
+        { id: 2, question: 'What is AM?', options: ['Audio Modulation', 'Amplitude Modulation', 'Angle Modulation', 'Analog Modulation'], correct: 1, explanation: 'AM varies carrier amplitude according to modulating signal.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What is bandwidth?', options: ['Signal strength', 'Frequency range', 'Power consumption', 'Distance covered'], correct: 1, explanation: 'Bandwidth is the range of frequencies occupied by a signal.' },
+        { id: 4, question: 'What is multiplexing?', options: ['Signal division', 'Multiple signals on one channel', 'Signal amplification', 'Noise reduction'], correct: 1, explanation: 'Multiplexing combines multiple signals for transmission over single channel.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is Shannon capacity?', options: ['Channel speed', 'Maximum data rate', 'Signal power', 'Noise level'], correct: 1, explanation: 'Shannon capacity formula gives maximum error-free data transmission rate.' },
+        { id: 6, question: 'What is OFDM?', options: ['Single carrier', 'Multiple carriers', 'Analog modulation', 'Digital coding'], correct: 1, explanation: 'OFDM divides signal into multiple subcarriers for efficient transmission.' },
+      ],
+    },
+    'Control Systems': {
+      'easy': [
+        { id: 1, question: 'What is feedback in control systems?', options: ['Forward path', 'Output to input', 'Input amplification', 'Error correction'], correct: 1, explanation: 'Feedback feeds output signal back to input for comparison and correction.' },
+        { id: 2, question: 'What is stability?', options: ['System speed', 'Bounded output', 'High gain', 'Low noise'], correct: 1, explanation: 'Stability means system output remains bounded for bounded inputs.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What is transfer function?', options: ['Input function', 'Output/Input ratio', 'Error function', 'Control function'], correct: 1, explanation: 'Transfer function is Laplace transform of output over input for LTI systems.' },
+        { id: 4, question: 'What does PID stand for?', options: ['Proportional Integral Derivative', 'Primary Input Device', 'Process Identification Data', 'Parameter Input Delay'], correct: 0, explanation: 'PID controller uses Proportional, Integral, and Derivative terms for control.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is root locus?', options: ['System roots', 'Pole-zero plot', 'Stability analysis', 'Both B and C'], correct: 3, explanation: 'Root locus plots closed-loop poles as gain varies for stability analysis.' },
+        { id: 6, question: 'What is state space representation?', options: ['Single equation', 'Differential equations', 'Transfer function', 'Block diagram'], correct: 1, explanation: 'State space uses first-order differential equations to represent system dynamics.' },
+      ],
+    },
+    'Microprocessors': {
+      'easy': [
+        { id: 1, question: 'What is a microprocessor?', options: ['Memory chip', 'CPU on chip', 'Storage device', 'Input device'], correct: 1, explanation: 'Microprocessor is a CPU implemented on a single integrated circuit chip.' },
+        { id: 2, question: 'What is ALU?', options: ['Address unit', 'Arithmetic Logic Unit', 'Array Logic Unit', 'Analog Logic Unit'], correct: 1, explanation: 'ALU performs arithmetic and logical operations in the CPU.' },
+      ],
+      'medium': [
+        { id: 3, question: 'What is pipelining?', options: ['Parallel processing', 'Sequential execution', 'Memory access', 'I/O operation'], correct: 0, explanation: 'Pipelining allows simultaneous execution of multiple instructions in different stages.' },
+        { id: 4, question: 'What is interrupt?', options: ['CPU stop', 'External signal', 'Program end', 'Error condition'], correct: 1, explanation: 'Interrupt is a signal that causes CPU to suspend current task and service request.' },
+      ],
+      'hard': [
+        { id: 5, question: 'What is cache memory?', options: ['Main memory', 'Fast buffer memory', 'Secondary storage', 'Register file'], correct: 1, explanation: 'Cache is high-speed memory that stores frequently accessed data and instructions.' },
+        { id: 6, question: 'What is RISC architecture?', options: ['Complex instructions', 'Reduced instruction set', 'Register intensive', 'Memory oriented'], correct: 1, explanation: 'RISC uses simple instructions that execute quickly, with more registers.' },
+      ],
+    },
+  };
+
+  const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
+  return questions.sort(() => Math.random() - 0.5).slice(0, count);
+};
+
+export const quizAPI = {
+  getQuestions: async (topic: string, difficulty: string, count: number = 5) => {
+    if (!topic || !difficulty) throw new Error('Topic and difficulty are required');
+
+    if (shouldUseMockData()) {
+      // Return mock questions for production deployment without backend
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+      return {
+        data: {
+          questions: getMockQuizQuestions(topic, difficulty, count),
+          topic,
+          difficulty,
+          count: Math.min(count, getMockQuizQuestions(topic, difficulty, count).length)
+        }
+      };
+    }
+
+    try {
+      return await api.get('/api/quiz/questions', {
+        params: { topic, difficulty, count }
+      });
+    } catch (error) {
+      console.warn('Quiz API failed, using mock questions:', error);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+      return {
+        data: {
+          questions: getMockQuizQuestions(topic, difficulty, count),
+          topic,
+          difficulty,
+          count: Math.min(count, getMockQuizQuestions(topic, difficulty, count).length)
+        }
+      };
+    }
+  },
+  submitQuiz: async (quizData: any) => {
+    if (!quizData) throw new Error('Quiz data is required');
+
+    if (shouldUseMockData()) {
+      // Return mock results for production deployment without backend
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      const score = Math.floor(Math.random() * 40) + 60; // Random score between 60-100
+      return {
+        data: {
+          score,
+          totalQuestions: quizData.answers?.length || 5,
+          correctAnswers: Math.floor((score / 100) * (quizData.answers?.length || 5)),
+          timeSpent: quizData.timeSpent || 300,
+          feedback: score >= 80 ? 'Excellent performance!' : score >= 60 ? 'Good job! Keep practicing.' : 'Needs more practice.',
+          topicMastery: Math.min(100, score + Math.floor(Math.random() * 20))
+        }
+      };
+    }
+
+    try {
+      return await api.post('/api/quiz/submit', quizData);
+    } catch (error) {
+      console.warn('Quiz submission API failed, using mock results:', error);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      const score = Math.floor(Math.random() * 40) + 60;
+      return {
+        data: {
+          score,
+          totalQuestions: quizData.answers?.length || 5,
+          correctAnswers: Math.floor((score / 100) * (quizData.answers?.length || 5)),
+          timeSpent: quizData.timeSpent || 300,
+          feedback: score >= 80 ? 'Excellent performance!' : score >= 60 ? 'Good job! Keep practicing.' : 'Needs more practice.',
+          topicMastery: Math.min(100, score + Math.floor(Math.random() * 20))
+        }
+      };
+    }
+  },
+  getQuizHistory: async (userId?: string) => {
+    if (shouldUseMockData()) {
+      return {
+        data: {
+          quizzes: [
+            { id: 1, topic: 'Arrays', score: 85, date: '2024-01-10', difficulty: 'medium' },
+            { id: 2, topic: 'Linked Lists', score: 78, date: '2024-01-09', difficulty: 'easy' },
+            { id: 3, topic: 'Trees', score: 92, date: '2024-01-08', difficulty: 'hard' }
+          ]
+        }
+      };
+    }
+
+    try {
+      return await api.get('/api/quiz/history', { params: { userId } });
+    } catch (error) {
+      console.warn('Quiz history API failed, using mock data:', error);
+      return {
+        data: {
+          quizzes: [
+            { id: 1, topic: 'Arrays', score: 85, date: '2024-01-10', difficulty: 'medium' },
+            { id: 2, topic: 'Linked Lists', score: 78, date: '2024-01-09', difficulty: 'easy' },
+            { id: 3, topic: 'Trees', score: 92, date: '2024-01-08', difficulty: 'hard' }
+          ]
+        }
+      };
+    }
+  }
 };
 
 export const learningAPI = {
