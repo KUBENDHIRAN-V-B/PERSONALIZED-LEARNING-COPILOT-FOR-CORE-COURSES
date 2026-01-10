@@ -37,7 +37,7 @@ const DashboardPage: React.FC = memo(() => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div
             onClick={navigateTo('/courses')}
             className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-all group border-l-4 border-blue-500"
@@ -57,6 +57,19 @@ const DashboardPage: React.FC = memo(() => {
             </div>
             <h3 className="font-bold text-gray-900 mb-1">Custom Quiz</h3>
             <p className="text-sm text-gray-600">Test your knowledge</p>
+          </div>
+          <div
+            onClick={() => {
+              localStorage.removeItem('api_keys');
+              window.location.reload();
+            }}
+            className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-all group border-l-4 border-gray-500"
+          >
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-gray-600 transition-colors">
+              <FiZap className="text-2xl text-gray-600 group-hover:text-white transition-colors" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">API Settings</h3>
+            <p className="text-sm text-gray-600">Update API keys</p>
           </div>
         </div>
 

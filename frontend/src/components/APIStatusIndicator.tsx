@@ -1,71 +1,50 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiWifi, FiWifiOff, FiChevronDown, FiChevronUp, FiRefreshCw } from 'react-icons/fi';
-import { statusAPI } from '../services/api';
 
-interface APIInfo {
-  connected: boolean;
-  code: number;
+interface ApiKey {
+  id: string;
   name: string;
-  limit: string;
-  rpm: string;
-}
-
-interface APIStatus {
-  timestamp: string;
-  apis: {
-    gemini: APIInfo;
-    openRouter: APIInfo;
-    groq: APIInfo;
-    cerebras: APIInfo;
-  };
+  key: string;
 }
 
 const APIStatusIndicator: React.FC = () => {
-  const [status, setStatus] = useState<APIStatus | null>(null);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  const fetchStatus = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await statusAPI.getStatus();
-      setStatus(response.data);
-      setLastUpdate(new Date());
-    } catch (error) {
-      console.error('Failed to fetch API status:', error);
-    } finally {
-      setLoading(false);
+  const loadApiKeys = useCallback(() => {
+    const savedKeys = localStorage.getItem('api_keys');
+    if (savedKeys) {
+      try {
+        const parsed = JSON.parse(savedKeys);
+        setApiKeys(parsed);
+        setLastUpdate(new Date());
+      } catch (error) {
+        console.error('Error loading API keys:', error);
+        setApiKeys([]);
+      }
+    } else {
+      setApiKeys([]);
     }
   }, []);
 
   useEffect(() => {
-    fetchStatus();
+    loadApiKeys();
     // Refresh every 30 seconds
-    const interval = setInterval(fetchStatus, 30000);
+    const interval = setInterval(loadApiKeys, 30000);
     return () => clearInterval(interval);
-  }, [fetchStatus]);
+  }, [loadApiKeys]);
 
-  const getConnectedCount = () => {
-    if (!status) return 0;
-    return Object.values(status.apis).filter(api => api.connected).length;
+  const getStatusColor = (hasKey: boolean) => {
+    return hasKey ? 'bg-green-500' : 'bg-gray-400';
   };
 
-  const getStatusColor = (api: APIInfo) => {
-    if (api.connected) return 'bg-green-500';
-    if (api.code === 429) return 'bg-yellow-500';
-    return 'bg-red-500';
+  const getStatusText = (hasKey: boolean) => {
+    return hasKey ? 'Ready' : 'No Key';
   };
 
-  const getStatusText = (api: APIInfo) => {
-    if (api.connected) return 'Connected';
-    if (api.code === 429) return 'Rate Limited';
-    if (api.code === 401) return 'Invalid Key';
-    return 'Offline';
-  };
-
-  const totalAPIs = status ? Object.keys(status.apis).length : 4;
-  const connectedAPIs = getConnectedCount();
+  const connectedAPIs = apiKeys.filter(key => key.key.trim()).length;
+  const totalAPIs = apiKeys.length || 0;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -75,11 +54,11 @@ const APIStatusIndicator: React.FC = () => {
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${connectedAPIs > 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+          <div className={`p-2 rounded-lg ${connectedAPIs > 0 ? 'bg-green-100' : 'bg-gray-100'}`}>
             {connectedAPIs > 0 ? (
               <FiWifi className="text-green-600" size={18} />
             ) : (
-              <FiWifiOff className="text-red-600" size={18} />
+              <FiWifiOff className="text-gray-600" size={18} />
             )}
           </div>
           <div className="text-left">
@@ -87,18 +66,18 @@ const APIStatusIndicator: React.FC = () => {
               AI Services Status
             </div>
             <div className="text-xs text-gray-500">
-              {connectedAPIs}/{totalAPIs} APIs connected
+              {connectedAPIs}/{totalAPIs} APIs configured
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {/* Status dots */}
           <div className="flex gap-1">
-            {status && Object.values(status.apis).map((api, idx) => (
+            {apiKeys.map((key, idx) => (
               <div
                 key={idx}
-                className={`w-2 h-2 rounded-full ${getStatusColor(api)}`}
-                title={`${api.name}: ${getStatusText(api)}`}
+                className={`w-2 h-2 rounded-full ${getStatusColor(!!key.key.trim())}`}
+                title={`${key.name}: ${getStatusText(!!key.key.trim())}`}
               />
             ))}
           </div>
@@ -115,60 +94,56 @@ const APIStatusIndicator: React.FC = () => {
               Last updated: {lastUpdate?.toLocaleTimeString() || 'Never'}
             </span>
             <button
-              onClick={fetchStatus}
-              disabled={loading}
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50"
+              onClick={loadApiKeys}
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
             >
-              <FiRefreshCw className={loading ? 'animate-spin' : ''} size={12} />
+              <FiRefreshCw size={12} />
               Refresh
             </button>
           </div>
 
           {/* API List */}
-          <div className="space-y-2">
-            {status && Object.entries(status.apis).map(([key, api]) => (
-              <div
-                key={key}
-                className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100"
-              >
-                <div className="flex items-center gap-2">
-                  <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor(api)}`} />
-                  <span className="text-sm font-medium text-gray-800">{api.name}</span>
+          {apiKeys.length > 0 ? (
+            <div className="space-y-2">
+              {apiKeys.map((key) => (
+                <div
+                  key={key.id}
+                  className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor(!!key.key.trim())}`} />
+                    <span className="text-sm font-medium text-gray-800">{key.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className={`px-2 py-0.5 rounded-full ${
+                      key.key.trim()
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {getStatusText(!!key.key.trim())}
+                    </span>
+                    <span className="text-gray-500">
+                      {key.key.trim() ? 'Configured' : 'Missing'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs">
-                  <span className={`px-2 py-0.5 rounded-full ${
-                    api.connected 
-                      ? 'bg-green-100 text-green-700' 
-                      : api.code === 429 
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
-                  }`}>
-                    {getStatusText(api)}
-                  </span>
-                  <span className="text-gray-500" title="Daily limit">
-                    {api.limit}
-                  </span>
-                  <span className="text-gray-400" title="Requests per minute">
-                    {api.rpm}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500 text-sm">
+              No API keys configured. Add keys in API Settings.
+            </div>
+          )}
 
           {/* Legend */}
           <div className="mt-3 pt-3 border-t border-gray-200 flex justify-center gap-4 text-xs text-gray-500">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Connected</span>
+              <span>Ready</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span>Rate Limited</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span>Offline</span>
+              <div className="w-2 h-2 rounded-full bg-gray-400" />
+              <span>No Key</span>
             </div>
           </div>
         </div>

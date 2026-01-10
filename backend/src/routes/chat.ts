@@ -7,18 +7,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize AI clients
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+// Model configurations
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-
-// Initialize Groq client
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
-
-// Track which provider to use (for fallback)
-let currentProvider: 'gemini' | 'groq' = 'gemini';
-let geminiFailCount = 0;
-const MAX_GEMINI_FAILS = 3;
 
 // ==================== RATE LIMITING ====================
 interface RateLimitEntry {
@@ -1621,9 +1612,13 @@ For ${courseCategory === 'CS' ? 'programming questions, provide working code exa
 async function generateWithGroq(
   message: string,
   systemPrompt: string,
-  history: Array<{ role: 'user' | 'assistant'; content: string }>
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  apiKey: string
 ): Promise<string | null> {
   try {
+    if (!apiKey) return null;
+    
+    const groqClient = new Groq({ apiKey });
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt }
     ];
@@ -1640,7 +1635,7 @@ async function generateWithGroq(
     // Add current message
     messages.push({ role: 'user', content: message });
 
-    const completion = await groq.chat.completions.create({
+    const completion = await groqClient.chat.completions.create({
       messages,
       model: GROQ_MODEL,
       temperature: 0.7,
@@ -1660,9 +1655,13 @@ async function generateWithGemini(
   systemPrompt: string,
   courseName: string,
   courseTopics: string[],
-  history: Array<{ role: 'user' | 'assistant'; content: string }>
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  apiKey: string
 ): Promise<string | null> {
   try {
+    if (!apiKey) return null;
+    
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
     const conversationHistory = [
@@ -1683,14 +1682,6 @@ async function generateWithGemini(
     return result.response.text();
   } catch (error: any) {
     console.error('Gemini API error:', error?.message || error);
-    // Check if it's a quota error
-    if (error?.status === 429 || error?.message?.includes('quota') || error?.message?.includes('429')) {
-      geminiFailCount++;
-      if (geminiFailCount >= MAX_GEMINI_FAILS) {
-        console.log('⚠️ Switching to Groq as primary provider due to Gemini quota issues');
-        currentProvider = 'groq';
-      }
-    }
     return null;
   }
 }
@@ -1700,7 +1691,8 @@ async function generateAIResponse(
   message: string, 
   context: string, 
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
-  courseId?: string
+  courseId?: string,
+  apiKeys?: { gemini?: string; groq?: string }
 ): Promise<string> {
   // First try knowledge base
   const kbResponse = generateResponse(message, context);
@@ -1718,25 +1710,22 @@ async function generateAIResponse(
 
   let aiResponse: string | null = null;
 
-  // Try providers in order based on current preference
-  if (currentProvider === 'gemini') {
-    // Try Gemini first
-    aiResponse = await generateWithGemini(message, systemPrompt, courseName, courseTopics, history);
+  // Try available API keys in order
+  const availableKeys = Object.entries(apiKeys || {});
+  
+  for (const [provider, key] of availableKeys) {
+    if (!key) continue;
     
-    // If Gemini fails, try Groq
-    if (!aiResponse && process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'YOUR_GROQ_API_KEY_HERE') {
-      console.log('📡 Falling back to Groq...');
-      aiResponse = await generateWithGroq(message, systemPrompt, history);
-    }
-  } else {
-    // Try Groq first (if Gemini has been failing)
-    if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'YOUR_GROQ_API_KEY_HERE') {
-      aiResponse = await generateWithGroq(message, systemPrompt, history);
+    // Try Gemini-compatible providers
+    if (provider.toLowerCase().includes('gemini') || provider.toLowerCase().includes('google')) {
+      aiResponse = await generateWithGemini(message, systemPrompt, courseName, courseTopics, history, key as string);
+      if (aiResponse) break;
     }
     
-    // If Groq fails, try Gemini
-    if (!aiResponse) {
-      aiResponse = await generateWithGemini(message, systemPrompt, courseName, courseTopics, history);
+    // Try Groq-compatible providers
+    if (provider.toLowerCase().includes('groq') || provider.toLowerCase().includes('llama')) {
+      aiResponse = await generateWithGroq(message, systemPrompt, history, key as string);
+      if (aiResponse) break;
     }
   }
 
@@ -1744,16 +1733,8 @@ async function generateAIResponse(
     return cleanMarkdown(aiResponse);
   }
 
-  // Ultimate fallback - course specific
-  const fallbackTopics = courseTopics.length > 0 
-    ? courseTopics.slice(0, 6).join(', ') 
-    : 'various concepts';
-    
-  return `I'm here to help you learn ${courseName}! 🎓
-
-I can answer questions about: ${fallbackTopics}
-
-Please ask me anything about ${courseName} and I'll explain it clearly with examples!`;
+  // Ultimate fallback
+  return `I need valid API keys to respond. Please check your Gemini or Groq API keys in the settings.`;
 }
 
 export default function chatRoutes(io: SocketIOServer) {
@@ -1763,11 +1744,15 @@ export default function chatRoutes(io: SocketIOServer) {
 
   router.post('/message', async (req: AuthRequest, res: Response) => {
     try {
-      const { courseId, message, conversationId } = req.body;
+      const { courseId, message, conversationId, apiKeys } = req.body;
       const userId = req.userId || 'anonymous';
 
       if (!message || !courseId) {
         return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      if (!apiKeys || Object.keys(apiKeys).length === 0) {
+        return res.status(400).json({ error: 'At least one API key is required' });
       }
 
       // Check rate limit
@@ -1801,8 +1786,8 @@ export default function chatRoutes(io: SocketIOServer) {
       // Use course info directly from database
       const courseContext = courseInfo.name;
       
-      // Use async AI response generation with courseId for strict topic filtering
-      const aiResponse = await generateAIResponse(message, courseContext, history, courseId);
+      // Use async AI response generation with user's API keys
+      const aiResponse = await generateAIResponse(message, courseContext, history, courseId, apiKeys);
 
       history.push({ role: 'assistant', content: aiResponse });
 

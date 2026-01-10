@@ -1,7 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
+import ApiKeySetup from './components/ApiKeySetup';
 
 // Lazy load pages for better performance
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -21,6 +22,21 @@ const PageLoader: React.FC = () => (
 );
 
 function App() {
+  const [hasApiKeys, setHasApiKeys] = useState(false);
+
+  useEffect(() => {
+    const savedKeys = localStorage.getItem('api_keys');
+    setHasApiKeys(!!savedKeys);
+  }, []);
+
+  const handleKeysSet = () => {
+    setHasApiKeys(true);
+  };
+
+  if (!hasApiKeys) {
+    return <ApiKeySetup onKeysSet={handleKeysSet} />;
+  }
+
   return (
     <Provider store={store}>
       <Router>

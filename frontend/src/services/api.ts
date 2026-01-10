@@ -78,7 +78,30 @@ export const authAPI = {
 export const chatAPI = {
   sendMessage: (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
-    return api.post('/api/chat/message', { courseId, message, conversationId });
+    
+    // Get API keys from localStorage
+    const savedKeys = localStorage.getItem('api_keys');
+    let apiKeys = {};
+    
+    if (savedKeys) {
+      try {
+        const parsedKeys = JSON.parse(savedKeys);
+        // Convert array to object for backward compatibility
+        apiKeys = parsedKeys.reduce((acc: any, key: any) => {
+          acc[key.name.toLowerCase()] = key.key;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error('Error parsing API keys:', error);
+      }
+    }
+    
+    return api.post('/api/chat/message', { 
+      courseId, 
+      message, 
+      conversationId,
+      apiKeys
+    });
   },
   getHistory: (conversationId: string) => {
     if (!conversationId) throw new Error('Conversation ID is required');
