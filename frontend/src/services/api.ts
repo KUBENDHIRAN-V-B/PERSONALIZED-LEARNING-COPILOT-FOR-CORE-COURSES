@@ -159,17 +159,260 @@ export const authAPI = {
   },
 };
 
+// Mock response generator for DSA questions
+const generateDSAResponse = (message: string): string => {
+  const lowerMessage = message.toLowerCase();
+
+  // DSA Concepts
+  if (lowerMessage.includes('what is dsa') || lowerMessage.includes('data structures and algorithms')) {
+    return `**Data Structures and Algorithms (DSA)** is the foundation of computer science and programming. It involves:
+
+## Key Areas:
+- **Data Structures**: Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, Hash Tables
+- **Algorithms**: Sorting, Searching, Dynamic Programming, Greedy Algorithms, Graph Algorithms
+
+## Why Learn DSA?
+- Essential for technical interviews at top companies (FAANG)
+- Improves problem-solving skills
+- Makes you a better programmer
+- Foundation for advanced topics like Machine Learning and System Design
+
+**Ready to start learning?** Try asking about specific data structures like "Explain Binary Trees" or algorithms like "How does Quick Sort work?"`;
+  }
+
+  if (lowerMessage.includes('binary tree') || lowerMessage.includes('tree')) {
+    return `**Binary Trees** are hierarchical data structures where each node has at most two children (left and right).
+
+## Key Concepts:
+- **Root**: Topmost node
+- **Leaf**: Node with no children
+- **Height**: Longest path from root to leaf
+- **Balanced Tree**: Heights of subtrees differ by at most 1
+
+## Common Operations:
+- **Traversal**: Inorder, Preorder, Postorder, Level-order
+- **Insertion/Deletion**: O(log n) in balanced trees
+- **Search**: O(log n) average case
+
+## Applications:
+- Expression parsing, File systems, Database indexing
+- Binary Search Trees (BST) for ordered data
+
+**Example**: A balanced binary tree with height h can store up to 2^(h+1) - 1 nodes!`;
+  }
+
+  if (lowerMessage.includes('sorting') || lowerMessage.includes('sort')) {
+    return `**Sorting Algorithms** arrange elements in a specific order (ascending/descending).
+
+## Popular Algorithms:
+
+### **Quick Sort** (Divide & Conquer)
+- **Time**: O(n log n) average, O(n²) worst
+- **Space**: O(log n)
+- **Stable**: No
+- **Best for**: General purpose sorting
+
+### **Merge Sort**
+- **Time**: O(n log n) always
+- **Space**: O(n)
+- **Stable**: Yes
+- **Best for**: Large datasets, external sorting
+
+### **Bubble Sort**
+- **Time**: O(n²)
+- **Space**: O(1)
+- **Stable**: Yes
+- **Best for**: Educational purposes, small arrays
+
+**Pro Tip**: For interviews, know the trade-offs between time/space complexity and stability!`;
+  }
+
+  if (lowerMessage.includes('dynamic programming') || lowerMessage.includes('dp')) {
+    return `**Dynamic Programming (DP)** solves complex problems by breaking them into simpler subproblems.
+
+## Key Principles:
+1. **Optimal Substructure**: Solution built from optimal solutions of subproblems
+2. **Overlapping Subproblems**: Same subproblems solved multiple times
+
+## Famous DP Problems:
+- **Fibonacci**: Memoization vs Tabulation
+- **Knapsack**: 0/1 and Unbounded variants
+- **Longest Common Subsequence**
+- **Matrix Chain Multiplication**
+
+## Steps to Solve DP:
+1. Define the problem state
+2. Identify recurrence relation
+3. Determine base cases
+4. Choose memoization or tabulation
+5. Handle edge cases
+
+**Example**: Coin Change problem - Find minimum coins needed for a given amount!
+
+DP is challenging but mastering it will level up your problem-solving skills significantly!`;
+  }
+
+  if (lowerMessage.includes('graph') || lowerMessage.includes('graphs')) {
+    return `**Graphs** represent relationships between objects using nodes (vertices) and edges.
+
+## Types:
+- **Directed**: Edges have direction (one-way)
+- **Undirected**: Edges are bidirectional
+- **Weighted**: Edges have costs/weights
+- **Unweighted**: All edges equal
+
+## Representations:
+- **Adjacency Matrix**: 2D array, O(V²) space
+- **Adjacency List**: Array of lists, O(V + E) space
+
+## Algorithms:
+- **BFS/DFS**: Traversal
+- **Dijkstra**: Shortest path (weighted)
+- **Bellman-Ford**: Negative weights
+- **Floyd-Warshall**: All-pairs shortest path
+- **Kruskal/Prim**: Minimum Spanning Tree
+
+## Applications:
+- Social networks, GPS navigation, web crawling, dependency resolution
+
+Graphs are everywhere in computer science! 🌐`;
+  }
+
+  if (lowerMessage.includes('array') || lowerMessage.includes('arrays')) {
+    return `**Arrays** are the most fundamental data structure - contiguous memory blocks storing elements of the same type.
+
+## Key Operations:
+- **Access**: O(1) - Direct indexing
+- **Search**: O(n) linear, O(log n) binary (if sorted)
+- **Insert/Delete**: O(n) - Shifting elements
+
+## Common Problems:
+- **Two Sum**: Find pairs that sum to target
+- **Maximum Subarray**: Kadane's algorithm
+- **Rotate Array**: In-place rotation
+- **Merge Intervals**: Overlapping ranges
+
+## Multi-dimensional Arrays:
+- **2D Arrays**: Matrices, grids
+- **Applications**: Image processing, game boards, spreadsheets
+
+**Fun Fact**: Array indexing starts at 0 in most languages because memory is byte-addressable!
+
+Arrays are simple but powerful - master them first!`;
+  }
+
+  if (lowerMessage.includes('linked list') || lowerMessage.includes('linkedlist')) {
+    return `**Linked Lists** are dynamic data structures where elements are connected via pointers.
+
+## Types:
+- **Singly Linked List**: Each node points to next
+- **Doubly Linked List**: Nodes point to both next and previous
+- **Circular Linked List**: Last node points back to first
+
+## Operations:
+- **Insert/Delete**: O(1) at head, O(n) at tail (singly)
+- **Search**: O(n)
+- **Reverse**: O(n) time
+
+## Advantages over Arrays:
+- Dynamic size (no fixed capacity)
+- Efficient insertions/deletions
+- No memory waste
+
+## Common Problems:
+- **Reverse a Linked List**
+- **Detect Cycle** (Floyd's algorithm)
+- **Merge Two Sorted Lists**
+- **Remove Nth Node from End**
+
+Linked Lists teach pointer manipulation - crucial for interviews!`;
+  }
+
+  if (lowerMessage.includes('stack') || lowerMessage.includes('stacks')) {
+    return `**Stacks** are LIFO (Last In, First Out) data structures.
+
+## Core Operations:
+- **Push**: Add element to top - O(1)
+- **Pop**: Remove top element - O(1)
+- **Peek/Top**: View top element - O(1)
+
+## Implementations:
+- **Array-based**: Fixed size, fast access
+- **Linked List**: Dynamic size, more flexible
+
+## Applications:
+- **Function Call Stack**: Recursion
+- **Expression Evaluation**: Infix to Postfix
+- **Browser History**: Back button
+- **Undo/Redo**: Text editors
+
+## Famous Problems:
+- **Valid Parentheses**: Stack-based validation
+- **Next Greater Element**
+- **Largest Rectangle in Histogram**
+
+**Stack Principle**: Last element added is first to be removed!`;
+  }
+
+  if (lowerMessage.includes('queue') || lowerMessage.includes('queues')) {
+    return `**Queues** are FIFO (First In, First Out) data structures.
+
+## Core Operations:
+- **Enqueue**: Add to rear - O(1)
+- **Dequeue**: Remove from front - O(1)
+- **Front**: View front element - O(1)
+
+## Variants:
+- **Circular Queue**: Wraps around when full
+- **Priority Queue**: Elements dequeued by priority
+- **Deque**: Double-ended queue
+
+## Implementations:
+- **Array**: Fixed size, circular for efficiency
+- **Linked List**: Dynamic size
+
+## Applications:
+- **Task Scheduling**: CPU scheduling
+- **Breadth-First Search**: Level-order traversal
+- **Print Queue**: Document printing
+- **Message Queues**: Inter-process communication
+
+**Queue Principle**: First element added is first to be removed!`;
+  }
+
+  // Default educational response
+  return `I'm your DSA Learning Assistant! 🤖
+
+**"${message}"** is a great question for learning Data Structures and Algorithms!
+
+## What I can help you with:
+- **Data Structures**: Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, Hash Tables
+- **Algorithms**: Sorting, Searching, Dynamic Programming, Greedy, Graph algorithms
+- **Problem Solving**: Interview questions, coding challenges, complexity analysis
+- **Concepts**: Time/Space complexity, Big O notation, optimization techniques
+
+## Try asking:
+- "Explain Binary Trees"
+- "How does Quick Sort work?"
+- "What is Dynamic Programming?"
+- "Graph traversal algorithms"
+
+**Ready to dive deep into DSA?** Let's start with the fundamentals and build up to advanced topics! 🚀
+
+*Note: This is a demo response. Deploy the backend server with AI API keys for full interactive learning experience.*`;
+};
+
 export const chatAPI = {
   sendMessage: async (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
 
     if (shouldUseMockData()) {
-      // Return mock response for production deployment without backend
+      // Return educational mock response for production deployment without backend
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
       return {
         data: {
           conversationId: conversationId || `conv_${Date.now()}`,
-          aiResponse: `This is a demo response for "${message}". The backend is not currently deployed. To enable full AI chat functionality, please deploy the backend server and set the REACT_APP_API_URL environment variable.`
+          aiResponse: generateDSAResponse(message)
         }
       };
     }
@@ -204,7 +447,7 @@ export const chatAPI = {
       return {
         data: {
           conversationId: conversationId || `conv_${Date.now()}`,
-          aiResponse: `This is a demo response for "${message}". The backend is not currently deployed. To enable full AI chat functionality, please deploy the backend server and set the REACT_APP_API_URL environment variable.`
+          aiResponse: generateDSAResponse(message)
         }
       };
     }
