@@ -112,16 +112,15 @@ const QuizPage: React.FC = () => {
     },
   };
 
-  const generateQuestions = (topic: string, difficulty: string): Question[] => {
-    const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
-    return questions.sort(() => Math.random() - 0.5);
-  };
-
   const handleStartQuiz = useCallback(() => {
     if (!quiz.selectedTopic) {
       alert('Please select a topic');
       return;
     }
+    const generateQuestions = (topic: string, difficulty: string): Question[] => {
+      const questions = questionBank[topic]?.[difficulty] || questionBank[topic]?.['easy'] || [];
+      return questions.sort(() => Math.random() - 0.5);
+    };
     let questions = generateQuestions(quiz.selectedTopic, quiz.difficulty);
     questions = questions.slice(0, quiz.questionCount);
     setTimer(0);
@@ -131,7 +130,7 @@ const QuizPage: React.FC = () => {
       questions,
       answers: new Array(questions.length).fill(-1),
     }));
-  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount, generateQuestions]);
+  }, [quiz.selectedTopic, quiz.difficulty, quiz.questionCount]);
 
   const handleAnswerSelect = useCallback((optionIndex: number) => {
     const newAnswers = [...quiz.answers];
