@@ -73,12 +73,23 @@ const ChatPage: React.FC = memo(() => {
       };
 
       setMessages(prev => [...prev, newMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error);
+      
+      let errorMessage = 'Sorry, I encountered an error. Please try again.';
+      
+      if (error.message?.includes('API keys are required')) {
+        errorMessage = '⚠️ API keys are required for chat functionality. Please add your API keys in the settings to enable AI-powered conversations.';
+      } else if (error.message?.includes('Backend server is not available')) {
+        errorMessage = '🔌 Backend server is not available. Please deploy the backend server with your API keys to enable chat functionality.';
+      } else if (error.message?.includes('Invalid API keys format')) {
+        errorMessage = '❌ Invalid API keys format. Please re-enter your API keys in the settings.';
+      }
+      
       setMessages(prev => [...prev, {
         id: `error_${Date.now()}`,
         userMessage: trimmedInput,
-        aiResponse: 'Sorry, I encountered an error. Please try again.',
+        aiResponse: errorMessage,
         timestamp: new Date(),
       }]);
     } finally {
@@ -123,6 +134,9 @@ const ChatPage: React.FC = memo(() => {
               </div>
             </div>
           </div>
+          
+          {/* API Status Indicator */}
+          <APIStatusIndicator />
         </div>
       </header>
 

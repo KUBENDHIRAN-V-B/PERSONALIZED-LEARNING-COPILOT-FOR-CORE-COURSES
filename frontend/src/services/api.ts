@@ -497,18 +497,7 @@ export const chatAPI = {
   sendMessage: async (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
 
-    if (shouldUseMockData()) {
-      // Return educational mock response for production deployment without backend
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-      return {
-        data: {
-          conversationId: conversationId || `conv_${Date.now()}`,
-          aiResponse: generateDSAResponse(message)
-        }
-      };
-    }
-
-    // Get API keys from localStorage
+    // Get API keys from localStorage - these are REQUIRED for chat functionality
     const savedKeys = localStorage.getItem('api_keys');
     let apiKeys = {};
 
@@ -522,7 +511,13 @@ export const chatAPI = {
         }, {});
       } catch (error) {
         console.error('Error parsing API keys:', error);
+        throw new Error('Invalid API keys format. Please re-enter your API keys.');
       }
+    }
+
+    // Check if we have any API keys
+    if (Object.keys(apiKeys).length === 0) {
+      throw new Error('API keys are required for chat functionality. Please add your API keys in the settings.');
     }
 
     try {
@@ -532,15 +527,16 @@ export const chatAPI = {
         conversationId,
         apiKeys
       });
-    } catch (error) {
-      console.warn('Chat API failed, using mock response:', error);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-      return {
-        data: {
-          conversationId: conversationId || `conv_${Date.now()}`,
-          aiResponse: generateDSAResponse(message)
-        }
-      };
+    } catch (error: any) {
+      console.error('Chat API failed:', error);
+      
+      // If backend is not available, show a clear error message
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        throw new Error('Backend server is not available. Please deploy the backend server with your API keys to enable chat functionality.');
+      }
+      
+      // If it's a server error, re-throw it
+      throw error;
     }
   },
   getHistory: (conversationId: string) => {
