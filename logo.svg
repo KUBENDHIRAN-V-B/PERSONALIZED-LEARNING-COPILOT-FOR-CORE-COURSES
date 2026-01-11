@@ -1,0 +1,26 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="20" fill="url(#logoGrad)"/>
+  
+  <!-- Book shape -->
+  <path d="M10 8C9.44772 8 9 8.44772 9 9V31C9 31.5523 9.44772 32 10 32H20V8H10Z" fill="white" opacity="0.95"/>
+  <path d="M20 8V32H30C30.5523 32 31 31.5523 31 31V9C31 8.44772 30.5523 8 30 8H20Z" fill="white" opacity="0.85"/>
+  
+  <!-- Book spine -->
+  <line x1="20" y1="8" x2="20" y2="32" stroke="white" stroke-width="0.5" opacity="0.6"/>
+  
+  <!-- Lightbulb inside book -->
+  <circle cx="20" cy="18" r="4" fill="#fbbf24" opacity="0.9"/>
+  <path d="M18 22C18 22 17 23 17 24C17 24.5523 17.4477 25 18 25H22C22.5523 25 23 24.5523 23 24C23 23 22 22 22 22" fill="#fbbf24" opacity="0.9"/>
+  <rect x="19" y="25" width="2" height="2" fill="#fbbf24" opacity="0.9"/>
+  
+  <!-- Glow effect -->
+  <circle cx="20" cy="18" r="5.5" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.4"/>
+</svg>
