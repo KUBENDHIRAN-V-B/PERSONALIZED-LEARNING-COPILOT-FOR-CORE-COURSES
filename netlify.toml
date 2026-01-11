@@ -3,6 +3,10 @@
   publish = "build"
   command = "npm install && npm run build"
 
+[functions]
+  directory = "backend/netlify/functions"
+  node_bundler = "esbuild"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api"
@@ -12,3 +16,12 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[env.production]
+  MONGODB_URI = ""
+  GOOGLE_API_KEY = ""
+  GROQ_API_KEY = ""
+  CEREBRAS_API_KEY = ""
+  OPENROUTER_API_KEY = ""
+  JWT_SECRET = ""
+  FRONTEND_URL = ""

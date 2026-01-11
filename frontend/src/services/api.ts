@@ -690,6 +690,8 @@ export const analyticsAPI = {
 };
 
 // Mock quiz questions database
+
+// Mock quiz questions database
 const getMockQuizQuestions = (topic: string, difficulty: string, count: number = 5) => {
   const questionBank: { [key: string]: { [key: string]: any[] } } = {
     // CS Topics
@@ -855,6 +857,32 @@ const getMockQuizQuestions = (topic: string, difficulty: string, count: number =
   return questions.sort(() => Math.random() - 0.5).slice(0, count);
 };
 
+export const statusAPI = {
+  getStatus: async () => {
+    if (shouldUseMockData()) {
+      return {
+        data: {
+          status: 'mock',
+          message: 'Using mock data - backend not deployed',
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+    try {
+      return await api.get('/api/status');
+    } catch (error) {
+      console.warn('Status API failed, using mock data:', error);
+      return {
+        data: {
+          status: 'mock',
+          message: 'Using mock data - backend not deployed',
+          timestamp: new Date().toISOString()
+        }
+      };
+    }
+  },
+};
+
 export const quizAPI = {
   getQuestions: async (topic: string, difficulty: string, count: number = 5) => {
     if (!topic || !difficulty) throw new Error('Topic and difficulty are required');
@@ -954,112 +982,6 @@ export const quizAPI = {
       };
     }
   }
-};
-
-export const learningAPI = {
-  getProfile: async () => {
-    if (shouldUseMockData()) {
-      return {
-        data: {
-          name: 'Demo User',
-          email: 'demo@example.com',
-          preferences: {
-            focusDuration: 25,
-            breakDuration: 5,
-            notifications: true
-          },
-          stats: {
-            totalStudyTime: 3600,
-            coursesCompleted: 2,
-            averageScore: 85
-          }
-        }
-      };
-    }
-    try {
-      return await cachedGet<any>('/api/learning/profile');
-    } catch (error) {
-      console.warn('Learning profile API failed, using mock data:', error);
-      return {
-        data: {
-          name: 'Demo User',
-          email: 'demo@example.com',
-          preferences: {
-            focusDuration: 25,
-            breakDuration: 5,
-            notifications: true
-          },
-          stats: {
-            totalStudyTime: 3600,
-            coursesCompleted: 2,
-            averageScore: 85
-          }
-        }
-      };
-    }
-  },
-  updateProfile: (data: any) => {
-    if (!data) throw new Error('Profile data is required');
-    return api.put('/api/learning/profile', data);
-  },
-  getMastery: async (courseId: string) => {
-    if (!courseId) throw new Error('Course ID is required');
-    if (shouldUseMockData()) {
-      return {
-        data: {
-          courseId,
-          overallMastery: 75,
-          topics: [
-            { name: 'Basic Concepts', mastery: 90, completed: true },
-            { name: 'Advanced Topics', mastery: 60, completed: false },
-            { name: 'Practice Problems', mastery: 80, completed: true }
-          ]
-        }
-      };
-    }
-    try {
-      return await cachedGet<any>(`/api/learning/mastery/${courseId}`);
-    } catch (error) {
-      console.warn('Learning mastery API failed, using mock data:', error);
-      return {
-        data: {
-          courseId,
-          overallMastery: 75,
-          topics: [
-            { name: 'Basic Concepts', mastery: 90, completed: true },
-            { name: 'Advanced Topics', mastery: 60, completed: false },
-            { name: 'Practice Problems', mastery: 80, completed: true }
-          ]
-        }
-      };
-    }
-  },
-};
-
-export const statusAPI = {
-  getStatus: async () => {
-    if (shouldUseMockData()) {
-      return {
-        data: {
-          status: 'mock',
-          message: 'Using mock data - backend not deployed',
-          timestamp: new Date().toISOString()
-        }
-      };
-    }
-    try {
-      return await api.get('/api/status');
-    } catch (error) {
-      console.warn('Status API failed, using mock data:', error);
-      return {
-        data: {
-          status: 'mock',
-          message: 'Using mock data - backend not deployed',
-          timestamp: new Date().toISOString()
-        }
-      };
-    }
-  },
 };
 
 export default api;

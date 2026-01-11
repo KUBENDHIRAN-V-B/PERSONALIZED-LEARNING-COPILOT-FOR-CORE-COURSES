@@ -52,8 +52,8 @@ const QuizPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [quiz.stage]);
 
-  const csTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Sorting', 'Searching', 'Dynamic Programming', 'Stacks & Queues', 'DBMS', 'Operating Systems', 'Computer Networks', 'OOP', 'Database Design', 'SQL', 'Algorithms', 'Compiler Design', 'Theory of Computation', 'Software Engineering'];
-  const eceTopics = ['Digital Electronics', 'Signals & Systems', 'Communication Systems', 'Electromagnetic Theory', 'Control Systems', 'Microprocessors', 'VLSI Design', 'Embedded Systems', 'DSP', 'Wireless Communication'];
+  const csTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Sorting', 'Dynamic Programming'];
+  const eceTopics = ['Digital Electronics', 'Signals & Systems', 'Communication Systems', 'Control Systems', 'Microprocessors'];
   const topics = quiz.category === 'cs' ? csTopics : quiz.category === 'ece' ? eceTopics : [];
 
   const handleStartQuiz = useCallback(async () => {

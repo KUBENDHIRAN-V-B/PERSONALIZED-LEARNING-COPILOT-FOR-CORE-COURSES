@@ -14,6 +14,7 @@ import chatRoutes from './routes/chat';
 import learningRoutes from './routes/learning';
 import analyticsRoutes from './routes/analytics';
 import courseRoutes from './routes/courses';
+import materialsRoutes from './routes/materials';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -157,6 +158,7 @@ app.use('/api/chat', authMiddleware, chatRoutes(io));
 app.use('/api/learning', authMiddleware, learningRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/materials', authMiddleware, materialsRoutes);
 
 // WebSocket Events
 io.on('connection', (socket) => {
