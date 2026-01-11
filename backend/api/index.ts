@@ -114,50 +114,13 @@ app.get('/', (req: Request, res: Response) => {
 
 // API Status check endpoint
 app.get('/api/status', async (req: Request, res: Response) => {
-  const checkAPI = (options: https.RequestOptions, postData?: string): Promise<{ status: boolean; code: number }> => {
-    return new Promise((resolve) => {
-      const apiReq = https.request(options, (apiRes) => {
-        resolve({ status: apiRes.statusCode === 200, code: apiRes.statusCode || 0 });
-      });
-      apiReq.on('error', () => resolve({ status: false, code: 0 }));
-      apiReq.setTimeout(5000, () => { apiReq.destroy(); resolve({ status: false, code: 0 }); });
-      if (postData) apiReq.write(postData);
-      apiReq.end();
-    });
-  };
-
-  const [gemini, openRouter, groq, cerebras] = await Promise.all([
-    checkAPI({
-      hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }, JSON.stringify({ contents: [{ parts: [{ text: 'Hi' }] }] })),
-    checkAPI({
-      hostname: 'openrouter.ai',
-      path: '/api/v1/models',
-      headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
-    }),
-    checkAPI({
-      hostname: 'api.groq.com',
-      path: '/openai/v1/models',
-      headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-    }),
-    checkAPI({
-      hostname: 'api.cerebras.ai',
-      path: '/v1/models',
-      headers: { Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}` },
-    }),
-  ]);
-
   res.json({
     timestamp: new Date().toISOString(),
-    apis: {
-      gemini: { connected: gemini.status, code: gemini.code, name: 'Google Gemini', limit: '1,500/day', rpm: '15 RPM' },
-      openRouter: { connected: openRouter.status, code: openRouter.code, name: 'OpenRouter', limit: 'Pay-as-you-go', rpm: 'Varies' },
-      groq: { connected: groq.status, code: groq.code, name: 'Groq', limit: '14,400/day', rpm: '30 RPM' },
-      cerebras: { connected: cerebras.status, code: cerebras.code, name: 'Cerebras', limit: '1,000/day', rpm: '30 RPM' },
-    },
+    status: 'online',
+    message: 'Backend is running. API keys must be provided by users.',
+    server: {
+      environment: 'serverless'
+    }
   });
 });
 

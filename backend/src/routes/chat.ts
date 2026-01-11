@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { AuthRequest } from '../middleware/auth';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -1649,6 +1650,94 @@ async function generateWithGroq(
   }
 }
 
+async function generateWithCerebras(
+  message: string,
+  systemPrompt: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  apiKey: string
+): Promise<string | null> {
+  try {
+    if (!apiKey) return null;
+
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    // Add recent history
+    const recentHistory = history.slice(-6);
+    for (const msg of recentHistory) {
+      messages.push({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      });
+    }
+
+    // Add current message
+    messages.push({ role: 'user', content: message });
+
+    const response = await axios.post('https://api.cerebras.ai/v1/chat/completions', {
+      messages,
+      model: 'llama3.1-8b',
+      temperature: 0.7,
+      max_tokens: 2048,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return response.data.choices[0]?.message?.content || null;
+  } catch (error) {
+    console.error('Cerebras API error:', error);
+    return null;
+  }
+}
+
+async function generateWithOpenRouter(
+  message: string,
+  systemPrompt: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  apiKey: string
+): Promise<string | null> {
+  try {
+    if (!apiKey) return null;
+
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    // Add recent history
+    const recentHistory = history.slice(-6);
+    for (const msg of recentHistory) {
+      messages.push({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      });
+    }
+
+    // Add current message
+    messages.push({ role: 'user', content: message });
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+      messages,
+      model: 'anthropic/claude-3-haiku',
+      temperature: 0.7,
+      max_tokens: 2048,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return response.data.choices[0]?.message?.content || null;
+  } catch (error) {
+    console.error('OpenRouter API error:', error);
+    return null;
+  }
+}
+
 // Generate response using Gemini (primary provider)
 async function generateWithGemini(
   message: string,
@@ -1692,7 +1781,7 @@ async function generateAIResponse(
   context: string, 
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
   courseId?: string,
-  apiKeys?: { gemini?: string; groq?: string }
+  apiKeys?: { gemini?: string; groq?: string; cerebras?: string; openrouter?: string }
 ): Promise<string> {
   // First try knowledge base
   const kbResponse = generateResponse(message, context);
@@ -1710,22 +1799,45 @@ async function generateAIResponse(
 
   let aiResponse: string | null = null;
 
-  // Try available API keys in order
-  const availableKeys = Object.entries(apiKeys || {});
+  // Validate that at least one API key is provided
+  if (!apiKeys || Object.keys(apiKeys).length === 0) {
+    return `❌ No API keys provided. Please provide at least one API key (Gemini, Groq, Cerebras, or OpenRouter) to use the AI tutor.`;
+  }
+
+  // Try available API keys in order of preference
+  const keyOrder = ['gemini', 'groq', 'cerebras', 'openrouter'];
   
-  for (const [provider, key] of availableKeys) {
+  for (const provider of keyOrder) {
+    const key = apiKeys[provider as keyof typeof apiKeys];
     if (!key) continue;
     
-    // Try Gemini-compatible providers
-    if (provider.toLowerCase().includes('gemini') || provider.toLowerCase().includes('google')) {
-      aiResponse = await generateWithGemini(message, systemPrompt, courseName, courseTopics, history, key as string);
-      if (aiResponse) break;
-    }
-    
-    // Try Groq-compatible providers
-    if (provider.toLowerCase().includes('groq') || provider.toLowerCase().includes('llama')) {
-      aiResponse = await generateWithGroq(message, systemPrompt, history, key as string);
-      if (aiResponse) break;
+    try {
+      // Try Gemini
+      if (provider === 'gemini') {
+        aiResponse = await generateWithGemini(message, systemPrompt, courseName, courseTopics, history, key);
+        if (aiResponse) break;
+      }
+      
+      // Try Groq
+      if (provider === 'groq') {
+        aiResponse = await generateWithGroq(message, systemPrompt, history, key);
+        if (aiResponse) break;
+      }
+
+      // Try Cerebras
+      if (provider === 'cerebras') {
+        aiResponse = await generateWithCerebras(message, systemPrompt, history, key);
+        if (aiResponse) break;
+      }
+
+      // Try OpenRouter
+      if (provider === 'openrouter') {
+        aiResponse = await generateWithOpenRouter(message, systemPrompt, history, key);
+        if (aiResponse) break;
+      }
+    } catch (error) {
+      console.error(`${provider} API error:`, error);
+      continue;
     }
   }
 
@@ -1733,8 +1845,8 @@ async function generateAIResponse(
     return cleanMarkdown(aiResponse);
   }
 
-  // Ultimate fallback
-  return `I need valid API keys to respond. Please check your Gemini or Groq API keys in the settings.`;
+  // Fallback message
+  return `⚠️ All AI providers failed. Please verify your API keys are valid and have available quota.`;
 }
 
 export default function chatRoutes(io: SocketIOServer) {
