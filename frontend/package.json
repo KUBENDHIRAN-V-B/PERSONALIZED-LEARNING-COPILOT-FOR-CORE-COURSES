@@ -2,6 +2,7 @@
   "name": "learning-copilot-frontend",
   "version": "1.0.0",
   "description": "AI-powered personalized learning copilot frontend",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
@@ -23,6 +24,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -44,5 +47,6 @@
     ]
   },
   "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
