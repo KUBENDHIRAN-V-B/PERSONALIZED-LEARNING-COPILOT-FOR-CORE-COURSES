@@ -254,14 +254,13 @@ export const chatAPI = {
   sendMessage: async (courseId: string, message: string, conversationId?: string) => {
     if (!courseId || !message) throw new Error('Course ID and message are required');
 
-    // Get API keys from localStorage - these are REQUIRED for chat functionality
+    // Get API keys from localStorage
     const savedKeys = localStorage.getItem('api_keys');
     let apiKeys = {};
 
     if (savedKeys) {
       try {
         const parsedKeys = JSON.parse(savedKeys);
-        // Convert array to object for backward compatibility
         apiKeys = parsedKeys.reduce((acc: any, key: any) => {
           acc[key.name.toLowerCase()] = key.key;
           return acc;
@@ -278,21 +277,28 @@ export const chatAPI = {
     }
 
     try {
-      return await api.post('/api/chat/message', {
+      const response = await api.post('/api/chat/message', {
         courseId,
         message,
         conversationId,
         apiKeys
       });
+      
+      // Return response with aiResponse field for compatibility
+      return {
+        data: {
+          aiResponse: response.data.response || response.data.aiResponse,
+          conversationId: response.data.conversationId || conversationId || 'demo'
+        }
+      };
     } catch (error: any) {
       console.error('Chat API failed:', error);
       
       // If backend is not available, show a clear error message
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-        throw new Error('Backend server not available');
+        throw new Error('Backend server not available. The chat feature requires a deployed backend with your API keys configured.');
       }
       
-      // If it's a server error, re-throw it
       throw error;
     }
   },
