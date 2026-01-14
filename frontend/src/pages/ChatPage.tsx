@@ -78,12 +78,22 @@ const ChatPage: React.FC = memo(() => {
       
       let errorMessage = 'Sorry, I encountered an error. Please try again.';
       
-      if (error.message?.includes('API keys are required')) {
+      // Check for specific error messages from backend
+      const backendError = error.response?.data?.error || error.message || '';
+      
+      if (backendError.includes('API keys are required') || backendError.includes('At least one API key is required')) {
         errorMessage = '⚠️ API keys are required for chat functionality. Please add your API keys in the settings to enable AI-powered conversations.';
-      } else if (error.message?.includes('Backend server is not available')) {
+      } else if (backendError.includes('Backend server is not available') || error.code === 'ERR_NETWORK') {
         errorMessage = '🔌 Backend server is not available. Please deploy the backend server with your API keys to enable chat functionality.';
-      } else if (error.message?.includes('Invalid API keys format')) {
+      } else if (backendError.includes('Invalid API keys format')) {
         errorMessage = '❌ Invalid API keys format. Please re-enter your API keys in the settings.';
+      } else if (backendError.includes('All AI providers failed')) {
+        errorMessage = '❌ All AI services failed. Please check that your API keys are valid and have available quota.';
+      } else if (backendError.includes('Rate limit exceeded')) {
+        errorMessage = '⏱️ Rate limit exceeded. Please wait a moment before sending more messages.';
+      } else if (backendError) {
+        // Show the actual backend error if it's not one of the generic ones
+        errorMessage = `❌ ${backendError}`;
       }
       
       setMessages(prev => [...prev, {

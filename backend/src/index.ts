@@ -174,4 +174,5 @@ server.listen(PORT, () => {
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'https://personalized-learning-copilot.netlify.app'}`);
 });
 
+// Export for serverless functions
 export { app, io };

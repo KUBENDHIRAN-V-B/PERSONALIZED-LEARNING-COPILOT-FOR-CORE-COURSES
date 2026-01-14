@@ -23,6 +23,7 @@ const PageLoader: React.FC = () => (
 
 function App() {
   const [hasApiKeys, setHasApiKeys] = useState(false);
+  const [showApiSetup, setShowApiSetup] = useState(false);
 
   useEffect(() => {
     const savedKeys = localStorage.getItem('api_keys');
@@ -31,9 +32,16 @@ function App() {
 
   const handleKeysSet = () => {
     setHasApiKeys(true);
+    setShowApiSetup(false);
   };
 
-  if (!hasApiKeys) {
+  // If no API keys and not showing setup, show setup
+  if (!hasApiKeys && !showApiSetup) {
+    return <ApiKeySetup onKeysSet={handleKeysSet} />;
+  }
+
+  // If showing API setup (from settings)
+  if (showApiSetup) {
     return <ApiKeySetup onKeysSet={handleKeysSet} />;
   }
 
@@ -47,6 +55,7 @@ function App() {
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/settings" element={<ApiKeySetup onKeysSet={handleKeysSet} />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

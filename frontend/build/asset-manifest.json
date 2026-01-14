@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/css/main.3eac7225.css",
-    "main.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/main.f0a63836.js",
-    "static/js/633.e86e2b82.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/633.e86e2b82.chunk.js",
-    "static/js/878.652ac350.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/878.652ac350.chunk.js",
-    "static/js/267.d2d33859.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/267.d2d33859.chunk.js",
-    "static/js/429.247ef9d5.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/429.247ef9d5.chunk.js",
-    "static/js/528.f649883c.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/528.f649883c.chunk.js",
-    "static/js/910.74722a77.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/910.74722a77.chunk.js",
-    "static/js/421.35af2ab5.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/421.35af2ab5.chunk.js",
-    "static/js/603.2feaa39d.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/603.2feaa39d.chunk.js",
-    "static/js/932.99a8da19.chunk.js": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/static/js/932.99a8da19.chunk.js",
-    "index.html": "/PERSONALIZED-LEARNING-COPILOT-FOR-CORE-COURSES/index.html"
+    "main.css": "/static/css/main.3eac7225.css",
+    "main.js": "/static/js/main.5f2815cb.js",
+    "static/js/633.c961abdf.chunk.js": "/static/js/633.c961abdf.chunk.js",
+    "static/js/878.043106d0.chunk.js": "/static/js/878.043106d0.chunk.js",
+    "static/js/267.d2d33859.chunk.js": "/static/js/267.d2d33859.chunk.js",
+    "static/js/429.247ef9d5.chunk.js": "/static/js/429.247ef9d5.chunk.js",
+    "static/js/528.f649883c.chunk.js": "/static/js/528.f649883c.chunk.js",
+    "static/js/910.74722a77.chunk.js": "/static/js/910.74722a77.chunk.js",
+    "static/js/421.35af2ab5.chunk.js": "/static/js/421.35af2ab5.chunk.js",
+    "static/js/603.2feaa39d.chunk.js": "/static/js/603.2feaa39d.chunk.js",
+    "static/js/932.99a8da19.chunk.js": "/static/js/932.99a8da19.chunk.js",
+    "index.html": "/index.html"
   },
   "entrypoints": [
     "static/css/main.3eac7225.css",
-    "static/js/main.f0a63836.js"
+    "static/js/main.5f2815cb.js"
   ]
 }

@@ -59,10 +59,7 @@ const DashboardPage: React.FC = memo(() => {
             <p className="text-sm text-gray-600">Test your knowledge</p>
           </div>
           <div
-            onClick={() => {
-              localStorage.removeItem('api_keys');
-              window.location.reload();
-            }}
+            onClick={navigateTo('/settings')}
             className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-all group border-l-4 border-gray-500"
           >
             <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-gray-600 transition-colors">

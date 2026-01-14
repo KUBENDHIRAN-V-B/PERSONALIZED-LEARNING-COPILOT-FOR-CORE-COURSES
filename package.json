@@ -1,0 +1,25 @@
+{
+  "name": "personalized-learning-copilot",
+  "version": "1.0.0",
+  "description": "AI-powered personalized learning copilot for core courses",
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File start-dev.ps1",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build && cd ../backend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "cd frontend && npm run clean && cd ../backend && npm run clean"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "learning",
+    "ai",
+    "education",
+    "react",
+    "nodejs"
+  ],
+  "author": "KUBENDHIRAN V B",
+  "license": "MIT"
+}
