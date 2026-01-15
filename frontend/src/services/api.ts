@@ -713,6 +713,20 @@ export const quizAPI = {
       };
     }
   },
+  startAdaptive: async (params: { topic: string; difficulty: 'easy' | 'medium' | 'hard'; questionCount: number; courseId?: string }) => {
+    if (!params?.topic || !params?.difficulty) throw new Error('Topic and difficulty are required');
+    return api.post('/api/quiz/start', params);
+  },
+  submitAnswer: async (params: { sessionId: string; questionId: string; selectedIndex: number }) => {
+    if (!params?.sessionId || !params?.questionId || params.selectedIndex === undefined) {
+      throw new Error('sessionId, questionId, and selectedIndex are required');
+    }
+    return api.post('/api/quiz/answer', params);
+  },
+  finishAdaptive: async (params: { sessionId: string; timeSpentSeconds: number }) => {
+    if (!params?.sessionId) throw new Error('sessionId is required');
+    return api.post('/api/quiz/finish', params);
+  },
   getQuizHistory: async (userId?: string) => {
     if (shouldUseMockData()) {
       return {

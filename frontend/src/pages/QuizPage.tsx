@@ -4,11 +4,13 @@ import { FiArrowLeft, FiCheck, FiX, FiRefreshCw, FiClock, FiZap } from 'react-ic
 import { quizAPI } from '../services/api';
 
 interface Question {
-  id: number;
+  id: string;
   question: string;
   options: string[];
-  correct: number;
-  explanation: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  // Filled after answering / finishing
+  correctIndex?: number;
+  explanation?: string;
 }
 
 interface QuizState {
@@ -20,9 +22,11 @@ interface QuizState {
   questions: Question[];
   currentQuestion: number;
   answers: number[];
-  score: number;
+  scorePercent: number;
+  correctCount: number;
   timeSpent: number;
   loading: boolean;
+  sessionId?: string;
 }
 
 const QuizPage: React.FC = () => {
@@ -36,9 +40,11 @@ const QuizPage: React.FC = () => {
     questions: [],
     currentQuestion: 0,
     answers: [],
-    score: 0,
+    scorePercent: 0,
+    correctCount: 0,
     timeSpent: 0,
     loading: false,
+    sessionId: undefined,
   });
   const [timer, setTimer] = useState(0);
 
@@ -65,15 +71,22 @@ const QuizPage: React.FC = () => {
     setQuiz(prev => ({ ...prev, loading: true }));
 
     try {
-      const response = await quizAPI.getQuestions(quiz.selectedTopic, quiz.difficulty, quiz.questionCount);
-      const questions = response.data.questions;
+      const response = await quizAPI.startAdaptive({
+        topic: quiz.selectedTopic,
+        difficulty: quiz.difficulty,
+        questionCount: quiz.questionCount,
+      });
+
+      const { sessionId, question, totalQuestions } = response.data;
+      const questions: Question[] = [question];
 
       setTimer(0);
       setQuiz(prev => ({
         ...prev,
         stage: 'quiz',
         questions,
-        answers: new Array(questions.length).fill(-1),
+        answers: new Array(totalQuestions).fill(-1),
+        sessionId,
         loading: false,
       }));
     } catch (error) {
@@ -90,47 +103,67 @@ const QuizPage: React.FC = () => {
   }, [quiz.answers, quiz.currentQuestion]);
 
   const handleNextQuestion = useCallback(async () => {
-    if (quiz.currentQuestion < quiz.questions.length - 1) {
-      setQuiz(prev => ({ ...prev, currentQuestion: prev.currentQuestion + 1 }));
-    } else {
-      // Submit quiz to API
-      setQuiz(prev => ({ ...prev, loading: true }));
+    const currentQ = quiz.questions[quiz.currentQuestion];
+    const selected = quiz.answers[quiz.currentQuestion];
+    if (!currentQ || selected === -1 || !quiz.sessionId) return;
 
-      try {
-        const quizData = {
-          topic: quiz.selectedTopic,
-          difficulty: quiz.difficulty,
-          answers: quiz.answers,
-          timeSpent: timer,
-          questions: quiz.questions
+    setQuiz(prev => ({ ...prev, loading: true }));
+
+    try {
+      const answerRes = await quizAPI.submitAnswer({
+        sessionId: quiz.sessionId,
+        questionId: currentQ.id,
+        selectedIndex: selected,
+      });
+
+      const { correctIndex, explanation, nextQuestion } = answerRes.data;
+
+      setQuiz(prev => {
+        const updatedQuestions = [...prev.questions];
+        updatedQuestions[prev.currentQuestion] = {
+          ...updatedQuestions[prev.currentQuestion],
+          correctIndex,
+          explanation,
         };
 
-        const response = await quizAPI.submitQuiz(quizData);
-        const result = response.data;
+        // If server provided next question, append it; otherwise finish
+        if (nextQuestion) {
+          updatedQuestions.push(nextQuestion);
+          return {
+            ...prev,
+            questions: updatedQuestions,
+            currentQuestion: prev.currentQuestion + 1,
+            loading: false,
+          };
+        }
+
+        return { ...prev, questions: updatedQuestions, loading: false };
+      });
+
+      // If there is no next question, finalize quiz
+      if (!answerRes.data.nextQuestion) {
+        const finishRes = await quizAPI.finishAdaptive({
+          sessionId: quiz.sessionId,
+          timeSpentSeconds: timer,
+        });
+
+        const result = finishRes.data;
 
         setQuiz(prev => ({
           ...prev,
           stage: 'results',
-          score: result.score,
-          timeSpent: result.timeSpent,
-          loading: false
-        }));
-      } catch (error) {
-        console.error('Failed to submit quiz:', error);
-        // Fallback to local calculation
-        const score = quiz.answers.reduce((acc, answer, idx) => {
-          return acc + (answer === quiz.questions[idx].correct ? 1 : 0);
-        }, 0);
-        setQuiz(prev => ({
-          ...prev,
-          stage: 'results',
-          score: Math.round((score / quiz.questions.length) * 100),
-          timeSpent: timer,
-          loading: false
+          scorePercent: result.scorePercent,
+          correctCount: result.correctCount,
+          timeSpent: result.timeSpentSeconds,
+          loading: false,
         }));
       }
+    } catch (error) {
+      console.error('Failed to submit answer/finish quiz:', error);
+      alert('Failed to submit your answer. Please try again.');
+      setQuiz(prev => ({ ...prev, loading: false }));
     }
-  }, [quiz.currentQuestion, quiz.questions, quiz.answers, quiz.selectedTopic, quiz.difficulty, timer]);
+  }, [quiz.currentQuestion, quiz.questions, quiz.answers, quiz.sessionId, timer]);
 
   const handleRetakeQuiz = useCallback(() => {
     setQuiz(prev => ({
@@ -140,8 +173,11 @@ const QuizPage: React.FC = () => {
       selectedTopic: '',
       currentQuestion: 0,
       answers: [],
-      score: 0,
+      scorePercent: 0,
+      correctCount: 0,
       timeSpent: 0,
+      sessionId: undefined,
+      questions: [],
     }));
     setTimer(0);
   }, []);
@@ -277,16 +313,16 @@ const QuizPage: React.FC = () => {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-semibold text-gray-600">
-                  Question {quiz.currentQuestion + 1} of {quiz.questions.length}
+                  Question {quiz.currentQuestion + 1} of {quiz.questionCount}
                 </span>
                 <span className="text-sm font-semibold text-blue-600 capitalize">
-                  {quiz.selectedTopic} • {quiz.difficulty}
+                  {quiz.selectedTopic} • {quiz.questions[quiz.currentQuestion].difficulty}
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{ width: `${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%` }}
+                  style={{ width: `${((quiz.currentQuestion + 1) / quiz.questionCount) * 100}%` }}
                 />
               </div>
             </div>
@@ -335,12 +371,12 @@ const QuizPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <div className="text-3xl font-bold text-blue-600 mb-1">
-                  {Math.round((quiz.score / quiz.questions.length) * 100)}%
+                  {quiz.scorePercent}%
                 </div>
                 <p className="text-sm text-gray-600">Score</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-3xl font-bold text-green-600 mb-1">{quiz.score}/{quiz.questions.length}</div>
+                <div className="text-3xl font-bold text-green-600 mb-1">{quiz.correctCount}/{quiz.questions.length}</div>
                 <p className="text-sm text-gray-600">Correct</p>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
@@ -353,7 +389,7 @@ const QuizPage: React.FC = () => {
               {quiz.questions.map((question, idx) => (
                 <div key={idx} className="border rounded-lg p-4">
                   <div className="flex items-start gap-3 mb-2">
-                    {quiz.answers[idx] === question.correct ? (
+                    {quiz.answers[idx] === (question.correctIndex ?? -999) ? (
                       <FiCheck className="text-green-600 text-xl flex-shrink-0 mt-1" />
                     ) : (
                       <FiX className="text-red-600 text-xl flex-shrink-0 mt-1" />
@@ -363,13 +399,13 @@ const QuizPage: React.FC = () => {
                       <p className="text-sm text-gray-600 mt-1">
                         Your answer: <span className="font-medium">{question.options[quiz.answers[idx]]}</span>
                       </p>
-                      {quiz.answers[idx] !== question.correct && (
+                      {question.correctIndex !== undefined && quiz.answers[idx] !== question.correctIndex && (
                         <p className="text-sm text-green-600 mt-1">
-                          Correct: <span className="font-medium">{question.options[question.correct]}</span>
+                          Correct: <span className="font-medium">{question.options[question.correctIndex]}</span>
                         </p>
                       )}
                       <p className="text-sm text-gray-700 mt-2 bg-blue-50 p-2 rounded">
-                        {question.explanation}
+                        {question.explanation || 'Explanation will appear after submission.'}
                       </p>
                     </div>
                   </div>

@@ -1,80 +1,22 @@
 import { Router, Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
+import {
+  addAnalyticsSession,
+  clearActiveTimer,
+  getActiveTimer,
+  getUserMastery,
+  getUserPreferences,
+  getUserSessions,
+  normalizeTopicKey,
+  setActiveTimer,
+  setUserPreferences,
+  updateTopicMastery,
+  StudySession,
+} from '../stores/analyticsStore';
 
 const router = Router();
 
-// In-memory storage for sessions (replace with MongoDB in production)
-interface StudySession {
-  id: string;
-  userId: string;
-  courseId: string;
-  topic: string;
-  startTime: Date;
-  endTime?: Date;
-  duration: number; // in minutes
-  accuracy?: number;
-  focusScore?: number;
-}
-
-interface TopicMastery {
-  topic: string;
-  mastery: number;
-  sessionsCount: number;
-  lastStudied: Date;
-}
-
-// Store sessions per user
-const userSessions: Map<string, StudySession[]> = new Map();
-const userMastery: Map<string, Map<string, TopicMastery>> = new Map();
-const activeTimers: Map<string, { startTime: Date; topic: string; courseId: string }> = new Map();
-
-interface UserPreferences {
-  peakFocusTime: { startHour: number; endHour: number } | null;
-  optimalDuration: number | null; // in minutes
-  masteryGoals: { [topic: string]: number }; // Custom goals per topic
-}
-const userPreferences: Map<string, UserPreferences> = new Map();
-
-// Analytics data storage
-interface AnalyticsSession {
-  userId: string;
-  courseId: string;
-  duration: number;
-  conceptsCovered: string[];
-  accuracy: number;
-  timestamp: Date;
-}
-const analyticsData: AnalyticsSession[] = [];
-
-const getUserSessions = (userId: string): StudySession[] => {
-  if (!userSessions.has(userId)) {
-    const demoSessions: StudySession[] = [
-      { id: '1', userId, courseId: 'dsa', topic: 'arrays', startTime: new Date(Date.now() - 86400000 * 2), duration: 35, accuracy: 82, focusScore: 78 },
-      { id: '2', userId, courseId: 'dsa', topic: 'sorting', startTime: new Date(Date.now() - 86400000), duration: 28, accuracy: 90, focusScore: 85 },
-      { id: '3', userId, courseId: 'dsa', topic: 'trees', startTime: new Date(Date.now() - 3600000 * 5), duration: 45, accuracy: 45, focusScore: 60 },
-      { id: '4', userId, courseId: 'dsa', topic: 'graphs', startTime: new Date(Date.now() - 3600000 * 10), duration: 30, accuracy: 72, focusScore: 75 },
-    ];
-    userSessions.set(userId, demoSessions);
-  }
-  return userSessions.get(userId)!;
-};
-
-const getUserMastery = (userId: string): Map<string, TopicMastery> => {
-  if (!userMastery.has(userId)) {
-    const masteryData = new Map<string, TopicMastery>([
-      ['arrays', { topic: 'arrays', mastery: 78, sessionsCount: 8, lastStudied: new Date(Date.now() - 86400000) }],
-      ['sorting', { topic: 'sorting', mastery: 92, sessionsCount: 12, lastStudied: new Date(Date.now() - 43200000) }],
-      ['trees', { topic: 'trees', mastery: 15, sessionsCount: 1, lastStudied: new Date(Date.now() - 172800000) }],
-      ['graphs', { topic: 'graphs', mastery: 58, sessionsCount: 5, lastStudied: new Date(Date.now() - 259200000) }],
-      ['linked-lists', { topic: 'linked-lists', mastery: 85, sessionsCount: 10, lastStudied: new Date(Date.now() - 86400000) }],
-      ['stacks-queues', { topic: 'stacks-queues', mastery: 88, sessionsCount: 9, lastStudied: new Date(Date.now() - 129600000) }],
-      ['recursion', { topic: 'recursion', mastery: 65, sessionsCount: 6, lastStudied: new Date(Date.now() - 216000000) }],
-      ['dynamic-programming', { topic: 'dynamic-programming', mastery: 42, sessionsCount: 4, lastStudied: new Date(Date.now() - 345600000) }],
-    ]);
-    userMastery.set(userId, masteryData);
-  }
-  return userMastery.get(userId)!;
-};
+// NOTE: This route uses in-memory stores via `stores/analyticsStore.ts`.
 
 // Calculate personalized insights based on real user data
 router.get('/insights', (req: Request, res: Response) => {
@@ -93,7 +35,6 @@ router.get('/insights', (req: Request, res: Response) => {
         ['sorting', { topic: 'sorting', mastery: 80, sessionsCount: 5, lastStudied: new Date() }],
         ['searching', { topic: 'searching', mastery: 70, sessionsCount: 4, lastStudied: new Date() }],
       ]);
-      userMastery.set(userId, finalMastery);
     }
 
     // Find weakest topic
@@ -131,9 +72,8 @@ router.get('/insights', (req: Request, res: Response) => {
           focusScore: 75,
         },
       ];
-      userSessions.set(userId, finalSessions);
     }
-    const prefs = userPreferences.get(userId);
+    const prefs = getUserPreferences(userId);
     let peakHour = 9;
     let peakScore = 78;
     let isCustomTime = false;
@@ -259,12 +199,12 @@ router.post('/preferences/focus-time', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid hour values. Must be 0-23.' });
     }
 
-    let prefs = userPreferences.get(userId);
+    let prefs = getUserPreferences(userId);
     if (!prefs) {
       prefs = { peakFocusTime: null, optimalDuration: null, masteryGoals: {} };
     }
     prefs.peakFocusTime = { startHour, endHour };
-    userPreferences.set(userId, prefs);
+    setUserPreferences(userId, prefs);
 
     const formatHour = (h: number) => {
       const hour12 = h % 12 || 12;
@@ -297,12 +237,12 @@ router.post('/preferences/mastery-goal', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid topic or goal. Goal must be between 0 and 100' });
     }
 
-    let prefs = userPreferences.get(userId);
+    let prefs = getUserPreferences(userId);
     if (!prefs) {
       prefs = { peakFocusTime: null, optimalDuration: null, masteryGoals: {} };
     }
     prefs.masteryGoals[topic] = goal;
-    userPreferences.set(userId, prefs);
+    setUserPreferences(userId, prefs);
 
     res.json({
       message: 'Mastery goal saved',
@@ -319,10 +259,10 @@ router.post('/preferences/mastery-goal', (req: Request, res: Response) => {
 router.delete('/preferences/focus-time', (req: Request, res: Response) => {
   try {
     const userId = 'demo-user'; // Use demo user for unauthenticated access
-    const prefs = userPreferences.get(userId);
+    const prefs = getUserPreferences(userId);
     if (prefs) {
       prefs.peakFocusTime = null;
-      userPreferences.set(userId, prefs);
+      setUserPreferences(userId, prefs);
     }
     res.json({ message: 'Focus time preference cleared. Will use auto-calculated value.' });
   } catch (error) {
@@ -341,11 +281,11 @@ router.post('/timer/start', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields: topic, courseId' });
     }
 
-    if (activeTimers.has(userId)) {
+    if (getActiveTimer(userId)) {
       return res.status(400).json({ error: 'Timer already running' });
     }
 
-    activeTimers.set(userId, {
+    setActiveTimer(userId, {
       startTime: new Date(),
       topic: topic || 'general',
       courseId: courseId || 'dsa',
@@ -372,7 +312,7 @@ router.post('/timer/stop', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields: accuracy, focusScore' });
     }
 
-    const timer = activeTimers.get(userId);
+    const timer = getActiveTimer(userId);
     if (!timer) {
       return res.status(400).json({ error: 'No active timer' });
     }
@@ -395,21 +335,10 @@ router.post('/timer/stop', (req: Request, res: Response) => {
     const sessions = getUserSessions(userId);
     sessions.push(session);
 
-    const mastery = getUserMastery(userId);
-    const topicKey = timer.topic.toLowerCase().replace(/\s+/g, '-');
-    let topicMastery = mastery.get(topicKey);
-    
-    if (!topicMastery) {
-      topicMastery = { topic: topicKey, mastery: 0, sessionsCount: 0, lastStudied: new Date() };
-      mastery.set(topicKey, topicMastery);
-    }
-    
     const masteryIncrease = Math.min(10, Math.round((accuracy || 75) / 10) + 2);
-    topicMastery.mastery = Math.min(100, topicMastery.mastery + masteryIncrease);
-    topicMastery.sessionsCount += 1;
-    topicMastery.lastStudied = endTime;
+    const topicMastery = updateTopicMastery(userId, timer.topic, masteryIncrease);
 
-    activeTimers.delete(userId);
+    clearActiveTimer(userId);
 
     res.json({
       message: 'Session completed',
@@ -428,7 +357,7 @@ router.post('/timer/stop', (req: Request, res: Response) => {
 router.get('/timer/status', (req: Request, res: Response) => {
   try {
     const userId = 'demo-user'; // Use demo user for unauthenticated access
-    const timer = activeTimers.get(userId);
+    const timer = getActiveTimer(userId);
 
     if (!timer) {
       return res.json({ active: false });
@@ -462,22 +391,11 @@ router.post('/mastery/update', (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields: topic, score' });
     }
 
-    const mastery = getUserMastery(userId);
-    const topicKey = topic.toLowerCase().replace(/\s+/g, '-');
-    
-    let topicMastery = mastery.get(topicKey);
-    if (!topicMastery) {
-      topicMastery = { topic: topicKey, mastery: 0, sessionsCount: 0, lastStudied: new Date() };
-      mastery.set(topicKey, topicMastery);
-    }
-
     const improvement = Math.round((score / 100) * 5);
-    topicMastery.mastery = Math.min(100, topicMastery.mastery + improvement);
-    topicMastery.sessionsCount += 1;
-    topicMastery.lastStudied = new Date();
+    const topicMastery = updateTopicMastery(userId, topic, improvement);
 
     res.json({
-      topic: topicKey,
+      topic: normalizeTopicKey(topic),
       newMastery: topicMastery.mastery,
       improvement,
       message: 'Mastery updated successfully',
@@ -574,7 +492,7 @@ router.post('/session', (req: AuthRequest, res: Response) => {
       timestamp: new Date(),
     };
 
-    analyticsData.push(session);
+    addAnalyticsSession(session);
 
     res.json({ message: 'Session logged', session });
   } catch (error) {

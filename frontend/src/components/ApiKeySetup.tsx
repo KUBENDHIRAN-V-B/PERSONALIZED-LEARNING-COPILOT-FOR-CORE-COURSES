@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiKey, FiEye, FiEyeOff, FiCheck, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiKey, FiEye, FiEyeOff, FiCheck, FiPlus, FiTrash2, FiDownload, FiUpload } from 'react-icons/fi';
 
 interface ApiKeySetupProps {
   onKeysSet: () => void;
@@ -76,6 +76,69 @@ const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onKeysSet }) => {
 
   const hasValidKeys = () => {
     return apiKeys.some(key => key.name.trim() && key.key.trim());
+  };
+
+  const handleExport = () => {
+    const validKeys = apiKeys.filter(key => key.name.trim() && key.key.trim());
+    if (validKeys.length === 0) {
+      alert('No API keys to export');
+      return;
+    }
+
+    const dataStr = JSON.stringify(validKeys, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `api-keys-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event: any) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            // Validate structure
+            const valid = imported.every((key: any) => 
+              typeof key === 'object' && 
+              (key.name || key.key) &&
+              (key.id || key.name || key.key)
+            );
+            
+            if (valid) {
+              // Add IDs if missing
+              const withIds = imported.map((key: any, idx: number) => ({
+                id: key.id || `${Date.now()}-${idx}`,
+                name: key.name || '',
+                key: key.key || ''
+              }));
+              setApiKeys(withIds);
+              alert(`Successfully imported ${withIds.length} API key(s)`);
+            } else {
+              alert('Invalid file format. Please ensure the file contains valid API key data.');
+            }
+          } else {
+            alert('No valid API keys found in the file.');
+          }
+        } catch (error) {
+          alert('Error reading file. Please ensure it is a valid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   return (
@@ -155,6 +218,26 @@ const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onKeysSet }) => {
         </div>
 
         <div className="space-y-4">
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              disabled={!hasValidKeys()}
+              className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              title="Export API keys to transfer to another device"
+            >
+              <FiDownload size={16} />
+              Export
+            </button>
+            <button
+              onClick={handleImport}
+              className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              title="Import API keys from another device"
+            >
+              <FiUpload size={16} />
+              Import
+            </button>
+          </div>
+
           <button
             onClick={handleSave}
             disabled={!hasValidKeys() || saving}
@@ -175,12 +258,12 @@ const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onKeysSet }) => {
           
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-xs text-amber-800">
-              <strong>Note:</strong> API keys are stored locally in your browser and are device-specific. You'll need to set them up again when using different devices or browsers.
+              <strong>Device-Specific Storage:</strong> API keys are stored locally in your browser and are device-specific. Use the Export/Import buttons above to transfer keys between devices or browsers.
             </p>
           </div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-800">
-              <strong>Privacy:</strong> Your API keys are sent directly to the AI providers and are never stored on our servers.
+              <strong>Privacy & Security:</strong> Your API keys are sent directly to the AI providers and are never stored on our servers. Keep your exported files secure and never share them publicly.
             </p>
           </div>
         </div>

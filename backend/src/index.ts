@@ -15,6 +15,7 @@ import learningRoutes from './routes/learning';
 import analyticsRoutes from './routes/analytics';
 import courseRoutes from './routes/courses';
 import materialsRoutes from './routes/materials';
+import quizRoutes from './routes/quiz';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -57,6 +58,7 @@ const server = http.createServer(app);
 
 // CORS configuration for production
 const allowedOrigins = [
+  'http://localhost:3000', // Development frontend
   process.env.FRONTEND_URL || 'https://personalized-learning-copilot.netlify.app',
   'https://personalized-learning-copilot-for-core-courses-1vbx5f6xu.vercel.app',
 ];
@@ -111,7 +113,7 @@ app.get('/api/status', async (req: Request, res: Response) => {
     status: 'online',
     message: 'Backend is running. API keys must be provided by users.',
     server: {
-      port: process.env.PORT || 5000,
+      port: process.env.PORT || 5002,
       environment: process.env.NODE_ENV || 'development'
     }
   });
@@ -123,6 +125,7 @@ app.use('/api/learning', authMiddleware, learningRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/materials', authMiddleware, materialsRoutes);
+app.use('/api/quiz', authMiddleware, quizRoutes);
 
 // WebSocket Events
 io.on('connection', (socket) => {
@@ -167,11 +170,12 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'https://personalized-learning-copilot.netlify.app'}`);
+  console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log(`🔗 API Base URL: http://localhost:${PORT}`);
 });
 
 // Export for serverless functions
