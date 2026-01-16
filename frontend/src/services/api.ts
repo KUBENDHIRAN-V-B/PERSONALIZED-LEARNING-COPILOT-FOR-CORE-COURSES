@@ -256,15 +256,15 @@ export const chatAPI = {
 
     // Get API keys from localStorage
     const savedKeys = localStorage.getItem('api_keys');
-    let apiKeys = {};
+    let apiKeys: Array<{ key: string; provider: string }> = [];
 
     if (savedKeys) {
       try {
         const parsedKeys = JSON.parse(savedKeys);
-        apiKeys = parsedKeys.reduce((acc: any, key: any) => {
-          acc[key.name.toLowerCase()] = key.key;
-          return acc;
-        }, {});
+        apiKeys = parsedKeys.map((key: any) => ({
+          key: key.key,
+          provider: key.provider || key.name.toLowerCase() // Fallback for backward compatibility
+        }));
       } catch (error) {
         console.error('Error parsing API keys:', error);
         throw new Error('Invalid API keys format. Please re-enter your API keys.');
@@ -272,7 +272,7 @@ export const chatAPI = {
     }
 
     // Check if we have any API keys
-    if (Object.keys(apiKeys).length === 0) {
+    if (apiKeys.length === 0) {
       throw new Error('API keys are required for chat functionality. Please add your API keys in the settings.');
     }
 
@@ -288,7 +288,9 @@ export const chatAPI = {
       return {
         data: {
           aiResponse: response.data.response || response.data.aiResponse,
-          conversationId: response.data.conversationId || conversationId || 'demo'
+          conversationId: response.data.conversationId || conversationId || 'demo',
+          provider: response.data.provider,
+          sanitized: response.data.sanitized
         }
       };
     } catch (error: any) {
@@ -713,7 +715,13 @@ export const quizAPI = {
       };
     }
   },
-  startAdaptive: async (params: { topic: string; difficulty: 'easy' | 'medium' | 'hard'; questionCount: number; courseId?: string }) => {
+  generateQuestions: async (params: { subject: string; topic: string; difficulty: 'easy' | 'medium' | 'hard'; count: number; apiKeys: any[] }) => {
+    if (!params?.subject || !params?.topic || !params?.difficulty || !params?.count) {
+      throw new Error('subject, topic, difficulty, and count are required');
+    }
+    return api.post('/api/quiz/generate', params);
+  },
+  startAdaptive: async (params: { topic: string; difficulty: 'easy' | 'medium' | 'hard'; questionCount: number; courseId?: string; useAI?: boolean; apiKeys?: any }) => {
     if (!params?.topic || !params?.difficulty) throw new Error('Topic and difficulty are required');
     return api.post('/api/quiz/start', params);
   },

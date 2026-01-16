@@ -17,6 +17,7 @@ const learning_1 = __importDefault(require("./routes/learning"));
 const analytics_1 = __importDefault(require("./routes/analytics"));
 const courses_1 = __importDefault(require("./routes/courses"));
 const materials_1 = __importDefault(require("./routes/materials"));
+const quiz_1 = __importDefault(require("./routes/quiz"));
 const auth_1 = require("./middleware/auth");
 // Load environment variables
 dotenv_1.default.config();
@@ -52,6 +53,7 @@ exports.app = app;
 const server = http_1.default.createServer(app);
 // CORS configuration for production
 const allowedOrigins = [
+    'http://localhost:3000', // Development frontend
     process.env.FRONTEND_URL || 'https://personalized-learning-copilot.netlify.app',
     'https://personalized-learning-copilot-for-core-courses-1vbx5f6xu.vercel.app',
 ];
@@ -102,7 +104,7 @@ app.get('/api/status', async (req, res) => {
         status: 'online',
         message: 'Backend is running. API keys must be provided by users.',
         server: {
-            port: process.env.PORT || 5000,
+            port: process.env.PORT || 5002,
             environment: process.env.NODE_ENV || 'development'
         }
     });
@@ -113,6 +115,7 @@ app.use('/api/learning', auth_1.authMiddleware, learning_1.default);
 app.use('/api/analytics', analytics_1.default);
 app.use('/api/courses', courses_1.default);
 app.use('/api/materials', auth_1.authMiddleware, materials_1.default);
+app.use('/api/quiz', auth_1.authMiddleware, quiz_1.default);
 // WebSocket Events
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
@@ -148,10 +151,11 @@ const gracefulShutdown = () => {
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'https://personalized-learning-copilot.netlify.app'}`);
+    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+    console.log(`🔗 API Base URL: http://localhost:${PORT}`);
 });
 //# sourceMappingURL=index.js.map
