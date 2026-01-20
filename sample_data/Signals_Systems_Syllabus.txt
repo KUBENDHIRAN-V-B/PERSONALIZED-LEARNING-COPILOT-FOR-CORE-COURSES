@@ -1,0 +1,14 @@
+
+Signals and Systems Syllabus
+
+UNIT I: CLASSIFICATION OF SIGNALS AND SYSTEMS
+Standard signals- Step, Ramp, Pulse, Impulse, Real and complex exponentials and Sinusoids_Classification of signals – Continuous time (CT) and Discrete Time (DT) signals, Periodic & Aperiodic signals, Deterministic & Random signals, Energy & Power signals - Classification of systems- CT systems and DT systems- – Linear & Nonlinear, Time-variant & Time-invariant, Causal & Non-causal, Stable & Unstable.
+
+UNIT II: ANALYSIS OF CONTINUOUS TIME SIGNALS
+Fourier series for periodic signals - Fourier Transform - properties- Laplace Transforms and properties.
+
+UNIT III: LINEAR TIME INVARIANT CONTINUOUS TIME SYSTEMS
+Impulse response - convolution integrals - Differential Equation- Fourier and Laplace transforms in Analysis of CT systems - Systems connected in series / parallel.
+
+UNIT IV: ANALYSIS OF DISCRETE TIME SIGNALS
+Baseband signal Sampling - Fourier Transform of discrete time signals (DTFT) - Properties of DTFT - Z Transform & Properties.
