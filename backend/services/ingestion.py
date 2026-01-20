@@ -1,3 +1,4 @@
+from typing import List, Dict, Optional, Any
 VECTOR_DB_PATH = "faiss_index"
 
 class IngestionManager:
