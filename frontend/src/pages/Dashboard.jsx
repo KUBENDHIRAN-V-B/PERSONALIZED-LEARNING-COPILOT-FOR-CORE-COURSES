@@ -41,13 +41,8 @@ const ProgressCircle = ({ percentage, color = "indigo-600" }) => {
                     cy="48"
                 />
                 <circle
-                    className="transition-all duration-1000 ease-out"
-                    strokeWidth="8"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
                     stroke={color.includes('#') ? color : "currentColor"}
-                    className={!color.includes('#') ? `text-${color}` : ''}
+                    className={`transition-all duration-1000 ease-out ${!color.includes('#') ? `text-${color}` : ''}`}
                     fill="transparent"
                     r={radius}
                     cx="48"
