@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional, Any
+from sqlalchemy.orm import Session
 VECTOR_DB_PATH = "faiss_index"
 
 class IngestionManager:
