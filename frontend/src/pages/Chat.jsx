@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import API_BASE_URL from '../config/api';
 import {
     Send,
     Bot,
@@ -41,7 +42,7 @@ const Chat = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post('http://127.0.0.1:8000/chat', { message: input });
+            const res = await axios.post(`${API_BASE_URL}/chat`, { message: input });
             const botMsg = {
                 role: 'assistant',
                 content: res.data.answer,

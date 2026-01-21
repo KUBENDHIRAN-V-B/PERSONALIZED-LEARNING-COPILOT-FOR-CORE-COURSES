@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import {
     Calendar,
     Lightbulb,
@@ -105,7 +106,7 @@ const Planner = () => {
 
     const fetchSavedPlans = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/plans');
+            const res = await axios.get(`${API_BASE_URL}/plans`);
             setSavedPlans(res.data);
         } catch (error) {
             console.error('Failed to fetch saved plans:', error);
@@ -114,7 +115,7 @@ const Planner = () => {
 
     const loadSavedPlan = async (planId) => {
         try {
-            const res = await axios.get(`http://127.0.0.1:8000/plan/${planId}`);
+            const res = await axios.get(`${API_BASE_URL}/plan/${planId}`);
             if (res.data.plan_data) {
                 setPlan(res.data.plan_data);
                 setGoal(res.data.goal);
@@ -130,7 +131,7 @@ const Planner = () => {
     const deleteSavedPlan = async (planId) => {
         if (!window.confirm('Are you sure you want to delete this saved plan?')) return;
         try {
-            await axios.delete(`http://127.0.0.1:8000/plan/${planId}`);
+            await axios.delete(`${API_BASE_URL}/plan/${planId}`);
             fetchSavedPlans();
         } catch (error) {
             console.error('Failed to delete plan:', error);
@@ -140,7 +141,7 @@ const Planner = () => {
     const generatePlan = async () => {
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/plan', {
+            const res = await axios.post(`${API_BASE_URL}/plan`, {
                 goal,
                 hours_per_day: parseInt(hours),
                 exam_date: examDate,
@@ -158,7 +159,7 @@ const Planner = () => {
         if (!plan) return;
         setSaving(true);
         try {
-            await axios.post('http://127.0.0.1:8000/plan/save', {
+            await axios.post(`${API_BASE_URL}/plan/save`, {
                 goal,
                 exam_date: examDate,
                 hours_per_day: parseInt(hours),
@@ -223,8 +224,8 @@ const Planner = () => {
                                     <div
                                         key={savedPlan.id}
                                         className={`p-6 rounded-2xl border-2 transition-all hover:shadow-lg ${savedPlan.is_active
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-slate-200 bg-white hover:border-primary/30'
+                                            ? 'border-primary bg-primary/5'
+                                            : 'border-slate-200 bg-white hover:border-primary/30'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-3">

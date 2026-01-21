@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import {
     Target,
     AlertCircle,
@@ -41,6 +42,10 @@ const ProgressCircle = ({ percentage, color = "indigo-600" }) => {
                     cy="48"
                 />
                 <circle
+                    strokeWidth="8"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
                     stroke={color.includes('#') ? color : "currentColor"}
                     className={`transition-all duration-1000 ease-out ${!color.includes('#') ? `text-${color}` : ''}`}
                     fill="transparent"
@@ -61,7 +66,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get('http://127.0.0.1:8000/profile');
+                const res = await axios.get(`${API_BASE_URL}/profile`);
                 setProfile(res.data);
             } catch (e) {
                 console.error(e);

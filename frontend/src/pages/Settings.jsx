@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import {
     Settings as SettingsIcon,
     Moon,
@@ -68,7 +70,7 @@ const Settings = () => {
 
         setLoading(true);
         try {
-            await axios.post('http://127.0.0.1:8000/reset-system');
+            await axios.post(`${API_BASE_URL}/reset-system`);
             alert("System reset successful. All background data cleared.");
             window.location.href = '/dashboard';
         } catch (err) {

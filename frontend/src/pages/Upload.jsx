@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import {
     UploadCloud,
     CheckCircle,
@@ -57,7 +58,7 @@ const UploadPage = () => {
 
     const fetchDocuments = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/files');
+            const res = await axios.get(`${API_BASE_URL}/files`);
             setDocuments(res.data);
         } catch (e) {
             console.error("Error fetching documents:", e);
@@ -78,7 +79,7 @@ const UploadPage = () => {
         formData.append('files', file);
 
         try {
-            await axios.post('http://127.0.0.1:8000/upload', formData, {
+            await axios.post(`${API_BASE_URL}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setUploadStates(prev => ({ ...prev, [type]: { status: 'success', file: file.name } }));
@@ -94,7 +95,7 @@ const UploadPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this document? This will remove it from the knowledge base.")) return;
         try {
-            await axios.delete(`http://127.0.0.1:8000/files/${id}`);
+            await axios.delete(`${API_BASE_URL}/files/${id}`);
             setDocuments(docs => docs.filter(doc => doc.id !== id));
             alert("Document deleted successfully.");
         } catch (e) {
@@ -104,7 +105,7 @@ const UploadPage = () => {
     };
 
     const handleView = (id) => {
-        window.open(`http://127.0.0.1:8000/files/${id}`, '_blank');
+        window.open(`${API_BASE_URL}/files/${id}`, '_blank');
     };
 
     return (

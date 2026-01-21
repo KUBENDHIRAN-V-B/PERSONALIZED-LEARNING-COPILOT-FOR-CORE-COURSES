@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 import {
     HelpCircle,
     Check,
@@ -70,7 +71,7 @@ const Quiz = () => {
     const generateQuiz = async () => {
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/quiz', { topic, difficulty });
+            const res = await axios.post(`${API_BASE_URL}/quiz`, { topic, difficulty });
             setQuizData(res.data);
             setCurrentIndex(0);
             setScore(0);
@@ -105,7 +106,7 @@ const Quiz = () => {
         setValidationFeedback(null);
 
         try {
-            const res = await axios.post('http://127.0.0.1:8000/validate-answer', {
+            const res = await axios.post(`${API_BASE_URL}/validate-answer`, {
                 question: currentQ.question,
                 correct_answer: currentQ.correct_answer,
                 student_answer: shortAnswer
@@ -144,7 +145,7 @@ const Quiz = () => {
     const submitResults = async () => {
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/submit', {
+            const res = await axios.post(`${API_BASE_URL}/submit`, {
                 topic_name: quizData.topic || topic,
                 score: score,
                 total_questions: quizData.questions.length,
@@ -384,10 +385,10 @@ const Quiz = () => {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             className={`p-6 rounded-2xl border-2 ${validationFeedback.is_correct
-                                                    ? 'bg-emerald-50 border-emerald-500'
-                                                    : validationFeedback.score >= 0.5
-                                                        ? 'bg-amber-50 border-amber-500'
-                                                        : 'bg-rose-50 border-rose-500'
+                                                ? 'bg-emerald-50 border-emerald-500'
+                                                : validationFeedback.score >= 0.5
+                                                    ? 'bg-amber-50 border-amber-500'
+                                                    : 'bg-rose-50 border-rose-500'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3 mb-2">
@@ -405,10 +406,10 @@ const Quiz = () => {
                                                     </div>
                                                 )}
                                                 <span className={`font-black text-lg ${validationFeedback.is_correct
-                                                        ? 'text-emerald-800'
-                                                        : validationFeedback.score >= 0.5
-                                                            ? 'text-amber-800'
-                                                            : 'text-rose-800'
+                                                    ? 'text-emerald-800'
+                                                    : validationFeedback.score >= 0.5
+                                                        ? 'text-amber-800'
+                                                        : 'text-rose-800'
                                                     }`}>
                                                     {validationFeedback.is_correct
                                                         ? 'Correct!'
@@ -417,10 +418,10 @@ const Quiz = () => {
                                                             : 'Incorrect'}
                                                 </span>
                                                 <span className={`ml-auto px-3 py-1 rounded-full text-xs font-black ${validationFeedback.is_correct
-                                                        ? 'bg-emerald-200 text-emerald-800'
-                                                        : validationFeedback.score >= 0.5
-                                                            ? 'bg-amber-200 text-amber-800'
-                                                            : 'bg-rose-200 text-rose-800'
+                                                    ? 'bg-emerald-200 text-emerald-800'
+                                                    : validationFeedback.score >= 0.5
+                                                        ? 'bg-amber-200 text-amber-800'
+                                                        : 'bg-rose-200 text-rose-800'
                                                     }`}>
                                                     +{validationFeedback.score} pts
                                                 </span>

@@ -115,6 +115,33 @@ The `backend/standalone_examples/` folder contains isolated, standalone scripts 
 
 ---
 
+## 🚀 Deployment
+
+### Frontend → Vercel
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and import your repository
+3. Set the **Root Directory** to `frontend`
+4. Add environment variable: `VITE_API_URL=https://your-backend-url.onrender.com`
+5. Deploy!
+
+### Backend → Render
+1. Push your code to GitHub
+2. Go to [render.com](https://render.com) and create a new **Web Service**
+3. Connect your repository and set **Root Directory** to `backend`
+4. Set **Build Command**: `pip install -r requirements.txt`
+5. Set **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+6. Add environment variable: `OPENROUTER_API_KEY=your-key`
+7. Deploy!
+
+### Environment Variables
+
+| Platform | Variable | Description |
+|----------|----------|-------------|
+| Vercel (Frontend) | `VITE_API_URL` | URL of your deployed backend |
+| Render (Backend) | `OPENROUTER_API_KEY` | Your OpenRouter API key |
+
+---
+
 ## 🤝 Contributing
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/NewFeature`)
