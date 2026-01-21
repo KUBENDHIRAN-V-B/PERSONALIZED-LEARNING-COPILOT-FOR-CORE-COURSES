@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import axios from 'axios';
-
 const SettingGroup = ({ title, children }) => (
     <div className="space-y-4">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-4">{title}</h3>
